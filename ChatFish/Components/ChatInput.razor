@@ -1,0 +1,96 @@
+@using ChatFish.Services
+@using Ganss.Xss
+@inject IJSRuntime JSRuntime
+@inject MessageDispatcher MessageDispatcher
+@inject HtmlSanitizer Sanitizer
+
+<form @onsubmit="SendMessage" class="chat-input-container" aria-label="Chat message input">
+    <input id="chat-message" type="text" class="chat-input" @ref="inputElement" @bind="chatMessage"
+        @bind:event="oninput" @onkeyup="HandleKeyPress" maxlength="45"
+        placeholder="Type a short message... (/help for more)" aria-label="Chat message input" />
+    <button type="submit" class="chat-submit" disabled="@string.IsNullOrWhiteSpace(chatMessage)"
+        aria-label="Send message">Send</button>
+</form>
+
+<style>
+    .chat-input-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 10px;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .chat-input {
+        flex-grow: 1;
+        margin-right: 10px;
+        padding: 10px;
+        border-radius: 20px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+    }
+
+    .chat-submit {
+        padding: 10px 20px;
+        border-radius: 50px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .chat-submit:hover {
+        background-color: #0056b3;
+        transform: scale(1.05);
+    }
+
+    .chat-submit:active {
+        transform: scale(0.95);
+    }
+
+    .chat-submit:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .chat-submit:disabled:hover {
+        background-color: #cccccc;
+        transform: none;
+    }
+</style>
+
+@code {
+    private string chatMessage = "";
+    private ElementReference inputElement;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await inputElement.FocusAsync();
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        await MessageDispatcher.DispatchMessageAsync(Sanitizer.Sanitize(chatMessage));
+        chatMessage = "";
+        StateHasChanged();
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(chatMessage))
+        {
+            await SendMessage();
+        }
+    }
+}

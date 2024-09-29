@@ -1,0 +1,43 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page" style="height: 100vh; display: flex; flex-direction: column;">
+    <main style="flex-grow: 1; overflow: hidden;">
+        <article id="mainView" class="content px-4" style="height: 100%; position: relative;">
+            @Body
+        </article>
+    </main>
+</div>
+
+<style>
+    .page {
+        display: flex;
+        flex-direction: column;
+    }
+
+    main {
+        flex-grow: 1;
+        overflow: hidden;
+    }
+
+    #mainView {
+        background-image: url('images/background.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    #mainView::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.3);
+        pointer-events: none;
+    }
+
+    #mainView>* {
+        position: relative;
+    }
+</style>

@@ -1,0 +1,166 @@
+﻿@page "/"
+@implements IDisposable
+@using ChatFish.Components
+@using ChatFish.Services
+@using ChatFish
+@inject FishTankClient FishTankClient
+@inject MessageDispatcher MessageDispatcher
+@inject IJSRuntime JSRuntime
+
+<div class="fish-tank-container">
+    <div id="fishTank" aria-label="Fish tank with swimming fish and an octopus">
+        <PageTitle>Fishy fishy fish</PageTitle>
+
+        <div aria-live="polite" class="visually-hidden">
+            There are currently @FishTankClient.Fish.Count fish in the tank, and one octopus.
+        </div>
+
+        @foreach (var fish in FishTankClient.Fish)
+        {
+            <Fish Color="@fish.Color" Scale="@fish.Scale" IsClientFish="@(fish.Id == FishTankClient.ClientConnectionId)"
+                CurrentMessage="@fish.CurrentMessage" IsMessageVisible="@fish.IsMessageVisible" @key="fish.Id" />
+        }
+    </div>
+
+    <ChatInput />
+</div>
+
+<FloatingToast IsVisible="@FishTankClient.IsOfflineMode" Position="TopLeft" ShowCloseButton="false"
+    ToastMessage="@(new Toast(){Title ="You are offline", Caption="Functionality will be limited."})" />
+
+<FloatingToast IsVisible="@(_toastMessage != null)" Position="TopLeft" OnClose="@CloseToast"
+    ToastMessage="@_toastMessage" />
+
+<style>
+    .fish-tank-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    #fishTank {
+        flex-grow: 1;
+        position: relative;
+        overflow: hidden;
+    }
+
+    ::deep ChatInput {
+        width: 100%;
+    }
+
+    .octopus {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        width: 100px;
+        height: 100px;
+    }
+</style>
+
+<script>
+    // this is declared here but used over in Fish.razor
+    window.getTankRect = () => {
+        var element = document.getElementById("fishTank");
+        if (!element) return null;
+
+        return element.getBoundingClientRect();
+    }
+
+    function makeDraggable(element, dotNetRef) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+        element.onmousedown = function dragMouseDown(e) {
+            dotNetRef.invokeMethodAsync('OnDraggingStart')
+            e = e || window.event;
+            e.preventDefault();
+
+            // get the mouse cursor position at startup:
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+
+            // drag functions
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+            e = e || window.event;
+            e.preventDefault();
+            // calculate the new cursor position:
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+
+            // set the element's new position:
+            element.style.top = (element.offsetTop - pos2) + "px";
+            element.style.left = (element.offsetLeft - pos1) + "px";
+        }
+
+        function closeDragElement() {
+            // disable drag functions when mouse button is released
+            document.onmouseup = null;
+            document.onmousemove = null;
+
+            // let the c# know the new position
+            dotNetRef.invokeMethodAsync('OnDraggingComplete', parseInt(element.style.left, 10), parseInt(element.style.top, 10));
+        }
+    }
+
+    window.getElementRect = (element) => {
+        if (!element) return null;
+        return element.getBoundingClientRect();
+    };
+</script>
+@code {
+    private Toast? _toastMessage = null;
+    private DotNetObjectReference<FishTank>? _dotNetRef;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("registerNetworkStatusCallback", _dotNetRef);
+        }
+    }
+
+    [JSInvokable]
+    public void OnNetworkStatusChange(bool isOnline)
+    {
+        FishTankClient.IsOfflineMode = !isOnline;
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        MessageDispatcher.OnToastRequested += ShowToast;
+        MessageDispatcher.OnOpenUrlRequested += OpenUrl;
+        FishTankClient.OnStateChanged += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        FishTankClient.OnStateChanged -= StateHasChanged;
+        MessageDispatcher.OnToastRequested -= ShowToast;
+        MessageDispatcher.OnOpenUrlRequested -= OpenUrl;
+
+        _dotNetRef?.Dispose();
+    }
+
+    private void ShowToast(Toast message)
+    {
+        _toastMessage = message;
+        StateHasChanged();
+    }
+
+    private void CloseToast()
+    {
+        _toastMessage = null;
+        StateHasChanged();
+    }
+
+    private async void OpenUrl(string url)
+    {
+        await JSRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+}

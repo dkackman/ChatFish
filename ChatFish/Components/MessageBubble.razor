@@ -1,0 +1,108 @@
+@using Ganss.Xss
+@using ChatFish.State
+@inject HtmlSanitizer Sanitizer
+
+<div class="message-bubble @(IsVisible ? "visible" : "hidden") @Sanitizer.Sanitize(Message.Modifier) @FishDirection.ToString().ToLower()"
+    style="@Position" role="status" aria-live="polite">
+    @(Sanitizer.Sanitize(Message.Message))
+</div>
+
+<style>
+    .message-bubble {
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(255, 255, 255, 0.4);
+        border: 2px solid rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+        padding: 10px;
+        max-width: 150px;
+        word-wrap: break-word;
+        transition: opacity 0.5s ease-in-out;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(2px);
+        animation: float 4s infinite ease-in-out;
+    }
+
+    .message-bubble::before,
+    .message-bubble::after {
+        content: '';
+        position: absolute;
+        background-color: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+    }
+
+    .message-bubble::before {
+        width: 15px;
+        height: 15px;
+        bottom: -20px;
+        animation: float 3s infinite ease-in-out 0.5s;
+    }
+
+    .message-bubble::after {
+        width: 10px;
+        height: 10px;
+        bottom: -35px;
+        animation: float 3s infinite ease-in-out 1s;
+    }
+
+    .message-bubble.left::before {
+        left: 20%;
+    }
+
+    .message-bubble.left::after {
+        left: 40%;
+    }
+
+    .message-bubble.right::before {
+        right: 20%;
+    }
+
+    .message-bubble.right::after {
+        right: 40%;
+    }
+
+    @@keyframes float {
+
+        0%,
+        100% {
+            transform: translate(-50%, -50%);
+        }
+
+        50% {
+            transform: translate(-50%, -60%);
+        }
+    }
+
+    .message-bubble.hidden {
+        opacity: 0;
+    }
+
+    .message-bubble.visible {
+        opacity: 1;
+    }
+
+    .message-bubble.shout {
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: larger;
+        color: #FF0000;
+    }
+
+    .message-bubble.whisper {
+        font-weight: italic;
+        text-transform: lowercase;
+        font-size: smaller;
+        color: #60666e;
+    }
+
+    // Add more modifier styles as needed
+</style>
+
+@code {
+    [Parameter] public ChatMessage Message { get; set; } = new();
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public string Position { get; set; } = "";
+    [Parameter] public Direction FishDirection { get; set; }
+}

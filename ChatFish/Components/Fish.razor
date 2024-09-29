@@ -1,0 +1,120 @@
+﻿@implements IDisposable
+@using System.Timers
+@using Microsoft.JSInterop
+@using ChatFish.Components
+@using ChatFish.Services
+@using ChatFish.State
+@inject IJSRuntime JSRuntime
+@inject Animator Animator
+
+<img src="@FishImagePath" alt="@($"{Color} fish")" @ref="fishElement"
+    aria-label="@($"{Color} fish {(IsClientFish ? "- your fish" : "")}")"
+    style="@($"position: absolute; left: {_fishAnimation.Position.Left}px; top: {_fishAnimation.Position.Top}px; transform: scale({Scale}); {(IsClientFish ? "filter: drop-shadow(0 0 10px gold); cursor: move;" : "")}")" />
+
+<MessageBubble Message="CurrentMessage" IsVisible="IsMessageVisible" Position="@GetBubblePosition()"
+    FishDirection="@_fishAnimation.Velocity.Direction" />
+
+@code {
+    [Parameter]
+    public FishColor Color { get; set; }
+
+    [Parameter]
+    public bool IsClientFish { get; set; }
+
+    [Parameter]
+    public string Scale { get; set; } = "100.0";
+
+    [Parameter]
+    public ChatMessage CurrentMessage { get; set; } = new();
+
+    [Parameter]
+    public bool IsMessageVisible { get; set; } = false;
+
+    public string FishImagePath => $"fish/{Color}/{_fishAnimation.Velocity.Direction}-{GetFrameDuration()}.png";
+
+    private DotNetObjectReference<Fish>? _dotNetRef;
+    private ElementReference fishElement;
+    private readonly FishAnimation _fishAnimation = new();
+
+    [JSInvokable]
+    public async Task OnDraggingStart()
+    {
+        _fishAnimation.Enabled = false;
+        await Task.CompletedTask;
+    }
+
+    [JSInvokable]
+    public async Task OnDraggingComplete(double left, double top)
+    {
+        _fishAnimation.MoveFish(new Point(left, top));
+        _fishAnimation.Enabled = true;
+        await Task.CompletedTask;
+    }
+
+    public string GetBubblePosition()
+    {
+        var leftPosition = _fishAnimation.Velocity.Direction == Direction.Right
+        ? _fishAnimation.Position.Left + _fishAnimation.Size.Width
+        : _fishAnimation.Position.Left - _fishAnimation.Size.Width / 10;
+        return $"left: {leftPosition}px; top: {_fishAnimation.Position.Top - _fishAnimation.Size.Height / 1.55}px;";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // place the new fish at a random point within the tank
+            var tankRect = await JSRuntime.InvokeAsync<ClientRect>("getTankRect");
+            _fishAnimation.InitializePosition(tankRect);
+            StateHasChanged(); // Ensure component re-renders on UI thread
+
+            // only the end user's fish is draggable
+            if (IsClientFish)
+            {
+                _dotNetRef = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync("makeDraggable", fishElement, _dotNetRef);
+            }
+        }
+    }
+
+    protected override void OnInitialized() => Animator.OnAnimationTick += OnTimerElapsedAsync;
+
+    // we need this as a member instead of a lambda to avoid a memory leak when the timer is disposed
+    private async void OnTimerElapsedAsync(ClientRect tankRect) => await MoveFishAsync(tankRect);
+
+    private async Task MoveFishAsync(ClientRect tankRect)
+    {
+        if (_fishAnimation.Enabled)
+        {
+            var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
+
+            _fishAnimation.IncrementPosition(tankRect, fishRect);
+
+            await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
+        }
+    }
+
+    // there are different animated pngs that are used based on the fish's speed
+    // this is because the animation speed cannot be set dynamically
+    private string GetFrameDuration()
+    {
+        if (_fishAnimation.Velocity.Dx > 3.0)
+        {
+            return "66";
+        }
+
+        if (_fishAnimation.Velocity.Dx > 2.25)
+        {
+            return "75";
+        }
+
+        return "100";
+    }
+
+    public void Dispose()
+    {
+        _fishAnimation.Enabled = false;
+        Animator.OnAnimationTick -= OnTimerElapsedAsync;
+        _dotNetRef?.Dispose();
+    }
+}
