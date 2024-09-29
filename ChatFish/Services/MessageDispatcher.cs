@@ -3,9 +3,9 @@ using ChatFish.State;
 
 namespace ChatFish.Services;
 
-public class MessageDispatcher(FishTankClient fishTankState, ILogger<MessageDispatcher> logger)
+public class MessageDispatcher(FishTankClient fishTankClient, ILogger<MessageDispatcher> logger)
 {
-    private readonly FishTankClient _fishTankState = fishTankState;
+    private readonly FishTankClient _fishTankClient = fishTankClient;
     private readonly ILogger<MessageDispatcher> _logger = logger;
 
     public async Task DispatchMessageAsync(string message)
@@ -20,7 +20,7 @@ public class MessageDispatcher(FishTankClient fishTankState, ILogger<MessageDisp
             }
             else
             {
-                await _fishTankState.SendMessageAsync(chatMessage);
+                await _fishTankClient.SendMessageAsync(chatMessage);
             }
         }
     }

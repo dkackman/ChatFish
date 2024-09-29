@@ -10,7 +10,6 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
         builder.RootComponents.Add<App>("#app");
         builder.RootComponents.Add<HeadOutlet>("head::after");
@@ -32,10 +31,9 @@ public class Program
             .GetRequiredService<ILoggerFactory>()
             .CreateLogger<Program>();
 
-        var baseAddress = builder.HostEnvironment.IsDevelopment() ? "https://localhost:7233/" : builder.HostEnvironment.BaseAddress;
         var fishTankClient = host.Services.GetRequiredService<FishTankClient>();
 
-        await fishTankClient.InitializeAsync($"{baseAddress}fishhub");
+        fishTankClient.Initialize();
 
         await host.RunAsync();
 

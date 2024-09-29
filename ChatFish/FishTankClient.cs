@@ -3,26 +3,29 @@ using ChatFish.State;
 
 namespace ChatFish;
 
-public class FishTankClient(ILogger<FishTankClient> logger) : IAsyncDisposable
+public class FishTankClient(ILogger<FishTankClient> logger)
 {
-    private IDisposable? _onReceiveFishStateSubscription;
-    private IDisposable? _onReceiveMessageSubscription;
     private readonly ILogger<FishTankClient> _logger = logger;
-    private IDictionary<string, FishState> _fish = new Dictionary<string, FishState>();
+    private Dictionary<string, FishState> _fish = [];
 
-    public string ClientConnectionId { get; private set; } = string.Empty;
-    public IReadOnlyCollection<FishState> Fish => (IReadOnlyCollection<FishState>)_fish.Values;
+    public string ClientConnectionId { get; private set; } = "user";
+    public IReadOnlyCollection<FishState> Fish => _fish.Values;
     public bool IsOfflineMode { get; set; } = false;
 
     public event Action? OnStateChanged;
 
     private const int MessageDisplayDurationMS = 10000;
 
-    public async Task InitializeAsync(string hubUrl)
+    public void Initialize()
     {
         try
         {
-            
+            _fish = new Dictionary<string, FishState>()
+            {
+                ["ai"] = new FishState { Id = "ai", Color = FishColor.Orange, Scale = "1.0" },
+                [ClientConnectionId] = new FishState { Id = ClientConnectionId, Color = FishColor.Blue, Scale = "0.95" },
+            };
+
             IsOfflineMode = false;
             _logger.LogDebug("ClientId connected: {ClientConnectionId}", ClientConnectionId);
         }
@@ -43,17 +46,14 @@ public class FishTankClient(ILogger<FishTankClient> logger) : IAsyncDisposable
         }
     }
 
-    public async ValueTask DisposeAsync()
-    {
-        _onReceiveFishStateSubscription?.Dispose();
-        _onReceiveMessageSubscription?.Dispose();
-
-    }
-
     public event Action<FishMessage>? OnMessageReceived;
 
     public async Task SendMessageAsync(ChatMessage message)
     {
+        // intentionally not awaited
+        _ = DisplayMessageForFish(ClientConnectionId, message);
+
+        await Task.CompletedTask;
         //if (_hubConnection is not null && !IsOfflineMode)
         //{
         //    await _hubConnection.SendAsync("BroadcastMessage", message);
