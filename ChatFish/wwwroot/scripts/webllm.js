@@ -8,36 +8,11 @@ const messages = [
   },
 ];
 
-// const availableModels = webllm.prebuiltAppConfig.model_list.map(
-//   (m) => m.model_id
-// );
-let selectedModel = "Llama-3.2-1B-Instruct-q4f16_1-M";
-
-// Callback function for initializing progress
-function updateEngineInitProgressCallback(report) {
-  console.log("initialize", report.progress);
-  document.getElementById("download-status").textContent = report.text;
-}
-
-// Create engine instance
-const engine = new webllm.MLCEngine();
-engine.setInitProgressCallback(updateEngineInitProgressCallback);
-
-async function initializeWebLLMEngine() {
-  document.getElementById("download-status").classList.remove("hidden");
-  selectedModel = document.getElementById("model-selection").value;
-  const config = {
-    temperature: 1.0,
-    top_p: 1,
-  };
-  await engine.reload(selectedModel, config);
-}
-
 async function streamingGenerating(messages, onUpdate, onFinish, onError) {
   try {
     let curMessage = "";
     let usage;
-    const completion = await engine.chat.completions.create({
+    const completion = await window.engine.chat.completions.create({
       stream: true,
       messages,
       stream_options: { include_usage: true },
@@ -52,7 +27,7 @@ async function streamingGenerating(messages, onUpdate, onFinish, onError) {
       }
       onUpdate(curMessage);
     }
-    const finalMessage = await engine.getMessage();
+    const finalMessage = await window.engine.getMessage();
     onFinish(finalMessage, usage);
   } catch (err) {
     onError(err);
@@ -132,36 +107,17 @@ function updateLastMessage(content) {
   lastMessageDom.textContent = content;
 }
 
-/*************** UI binding ***************/
-// availableModels.forEach((modelId) => {
-//   const option = document.createElement("option");
-//   option.value = modelId;
-//   option.textContent = modelId;
-//   document.getElementById("model-selection").appendChild(option);
-// });
-// document.getElementById("model-selection").value = selectedModel;
-// document.getElementById("download").addEventListener("click", function () {
-//   initializeWebLLMEngine().then(() => {
-//     document.getElementById("send").disabled = false;
-//   });
-// });
-// document.getElementById("send").addEventListener("click", function () {
-//   onMessageSend();
-// });
-
-// Expose the webllm object to the global scope
-window.webllm = webllm;
-
+// interop methods called from razor code
 window.getAvailableModels = () => {
   return webllm.prebuiltAppConfig.model_list.map((m) => m.model_id);
 };
 
 window.initializeWebLLMEngine = async (selectedModel, dotNetHelper) => {
-  if (!engine) {
-    engine = new webllm.MLCEngine();
+  if (!window.engine) {
+    window.engine = new webllm.MLCEngine();
   }
 
-  engine.setInitProgressCallback((report) => {
+  window.engine.setInitProgressCallback((report) => {
     dotNetHelper.invokeMethodAsync(
       "UpdateEngineInitProgress",
       report.text,
@@ -174,7 +130,5 @@ window.initializeWebLLMEngine = async (selectedModel, dotNetHelper) => {
     top_p: 1,
   };
 
-  await engine.reload(selectedModel, config);
+  await window.engine.reload(selectedModel, config);
 };
-
-// Add any other functions you need to call from Blazor
