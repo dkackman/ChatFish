@@ -1,0 +1,201 @@
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+@if (IsDialogVisible)
+{
+    <div class="@GetPositionClasses()">
+        <div class="custom-dialog" role="dialog" aria-modal="true">
+            <div class="dialog-header">
+                <strong class="me-auto">Configure Chat LLM Settings</strong>
+                @if (ShowCloseButton)
+                {
+                    <button type="button" class="btn-close custom-close" @onclick="CloseDialog" aria-label="Close"></button>
+                }
+            </div>
+            <div class="dialog-body">
+                <div class="download-container">
+                    <select id="model-selection" @bind="selectedModel">
+                        @foreach (var model in availableModels)
+                        {
+                            <option value="@model">@model</option>
+                        }
+                    </select>
+                    <button id="download" @onclick="InitializeWebLLMEngine">Download</button>
+                </div>
+                <p id="download-status" class="@(isDownloadStatusVisible ? "" : "hidden")">@downloadStatus</p>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsDialogVisible { get; set; }
+    [Parameter] public string Position { get; set; } = "TopRight";
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private List<string> availableModels = new List<string>();
+    private string selectedModel = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
+    private string downloadStatus = "";
+    private bool isDownloadStatusVisible = false;
+    private DotNetObjectReference<LLMSettingsDialog>? _dotNetRef;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            availableModels = await JSRuntime.InvokeAsync<List<string>>("getAvailableModels");
+        }
+        catch (JSException)
+        {
+            Console.WriteLine("Failed to get available models. Using default.");
+            availableModels = new List<string> { selectedModel };
+        }
+    }
+
+    private async Task InitializeWebLLMEngine()
+    {
+        isDownloadStatusVisible = true;
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("initializeWebLLMEngine", selectedModel, _dotNetRef);
+        }
+        catch (JSException ex)
+        {
+            Console.WriteLine($"Failed to initialize WebLLM engine: {ex.Message}");
+            downloadStatus = "Failed to initialize WebLLM engine. Please try again.";
+        }
+    }
+
+    [JSInvokable]
+    public void UpdateEngineInitProgress(string text, double progress)
+    {
+        downloadStatus = $"{text} - {progress:P0}";
+        StateHasChanged();
+    }
+
+    private async Task CloseDialog()
+    {
+        IsDialogVisible = false;
+        await OnClose.InvokeAsync();
+    }
+
+    private string GetPositionClasses()
+    {
+        var baseClasses = "position-fixed p-3";
+        return Position.ToLower() switch
+        {
+            "topright" => $"{baseClasses} top-0 end-0",
+            "topleft" => $"{baseClasses} top-0 start-0",
+            "bottomright" => $"{baseClasses} bottom-0 end-0",
+            "bottomleft" => $"{baseClasses} bottom-0 start-0",
+            _ => $"{baseClasses} top-0 end-0",
+        };
+    }
+
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
+}
+
+<style>
+    .custom-dialog {
+        background-color: rgba(255, 255, 255, 0.4);
+        border: 2px solid rgba(255, 255, 255, 0.6);
+        border-radius: 15px;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(2px);
+        animation: float 4s infinite ease-in-out;
+        width: 300px;
+    }
+
+    .dialog-header {
+        background-color: rgba(255, 255, 255, 0.6);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+        border-top-left-radius: 13px;
+        border-top-right-radius: 13px;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .dialog-body {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-bottom-left-radius: 13px;
+        border-bottom-right-radius: 13px;
+        padding: 15px;
+    }
+
+    .custom-close {
+        background-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .custom-dialog::before,
+    .custom-dialog::after {
+        content: '';
+        position: absolute;
+        background-color: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+    }
+
+    .custom-dialog::before {
+        width: 15px;
+        height: 15px;
+        bottom: -20px;
+        left: 20%;
+        animation: float 3s infinite ease-in-out 0.5s;
+    }
+
+    .custom-dialog::after {
+        width: 10px;
+        height: 10px;
+        bottom: -35px;
+        left: 40%;
+        animation: float 3s infinite ease-in-out 1s;
+    }
+
+    @@keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    #model-selection,
+    #download {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 5px;
+        border-radius: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        background-color: rgba(255, 255, 255, 0.4);
+    }
+
+    #download {
+        cursor: pointer;
+    }
+
+    #download-status {
+        margin-top: 10px;
+    }
+
+    .hidden {
+        display: none;
+    }
+</style>

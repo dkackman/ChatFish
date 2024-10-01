@@ -5,13 +5,14 @@ public class ChatMessage
     public static readonly IReadOnlyDictionary<string, string> Commands = new Dictionary<string, string>
     {
         {"about", "Show the about page"},
-        {"help", "Display this help"}
+        {"help", "Display this help"},
+        {"llm", "Configure the LLM"},
     };
 
     public static readonly IReadOnlyDictionary<string, string> Emotes = new Dictionary<string, string>
     {
         {"shout", "Shout a chat message"},
-        {"whisper", "Whisper a chat message"}
+        {"whisper", "Whisper a chat message"},
     };
 
     public string Message { get; init; } = "";

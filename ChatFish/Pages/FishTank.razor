@@ -24,7 +24,7 @@
 
     <ChatInput />
 </div>
-
+<LLMSettingsDialog IsDialogVisible="@IsSettingsDialogVisible" />
 <FloatingToast IsVisible="@FishTankClient.IsOfflineMode" Position="TopLeft" ShowCloseButton="false"
     ToastMessage="@(new Toast(){Title ="You are offline", Caption="Functionality will be limited."})" />
 
@@ -113,6 +113,8 @@
     };
 </script>
 @code {
+    private bool IsSettingsDialogVisible = false;
+
     private Toast? _toastMessage = null;
     private DotNetObjectReference<FishTank>? _dotNetRef;
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -135,6 +137,7 @@
     {
         MessageDispatcher.OnToastRequested += ShowToast;
         MessageDispatcher.OnOpenUrlRequested += OpenUrl;
+        MessageDispatcher.OnCommand += HandleCommand;
         FishTankClient.OnStateChanged += StateHasChanged;
     }
 
@@ -142,11 +145,23 @@
     {
         FishTankClient.OnStateChanged -= StateHasChanged;
         MessageDispatcher.OnToastRequested -= ShowToast;
+        MessageDispatcher.OnCommand -= HandleCommand;
         MessageDispatcher.OnOpenUrlRequested -= OpenUrl;
 
         _dotNetRef?.Dispose();
     }
-
+    private void HandleCommand(string command)
+    {
+        switch (command)
+        {
+            case "llm":
+                IsSettingsDialogVisible = true;
+                break;
+            default:
+                break;
+        }
+        StateHasChanged();
+    }
     private void ShowToast(Toast message)
     {
         _toastMessage = message;

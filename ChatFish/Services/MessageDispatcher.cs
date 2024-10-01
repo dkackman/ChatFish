@@ -27,6 +27,7 @@ public class MessageDispatcher(FishTankClient fishTankClient, ILogger<MessageDis
 
     public event Action<Toast>? OnToastRequested;
     public event Action<string>? OnOpenUrlRequested;
+    public event Action<string>? OnCommand;
 
     private void ProcessCommand(string command)
     {
@@ -51,6 +52,7 @@ public class MessageDispatcher(FishTankClient fishTankClient, ILogger<MessageDis
 
             // Add more commands here as needed
             default:
+                OnCommand?.Invoke(command);
                 _logger.LogDebug("Unknown command: {commandName}", command);
                 break;
         }
