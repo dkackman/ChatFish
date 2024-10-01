@@ -1,0 +1,25 @@
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public string Position { get; set; } = "TopRight";
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    protected string GetPositionClasses()
+    {
+        var baseClasses = "position-fixed p-3";
+        return Position.ToLower() switch
+        {
+            "topright" => $"{baseClasses} top-0 end-0",
+            "topleft" => $"{baseClasses} top-0 start-0",
+            "bottomright" => $"{baseClasses} bottom-0 end-0",
+            "bottomleft" => $"{baseClasses} bottom-0 start-0",
+            _ => $"{baseClasses} top-0 end-0",
+        };
+    }
+
+    protected async Task CloseComponent()
+    {
+        IsVisible = false;
+        await OnClose.InvokeAsync();
+    }
+}

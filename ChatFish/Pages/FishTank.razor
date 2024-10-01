@@ -24,10 +24,9 @@
 
     <ChatInput />
 </div>
-<LLMSettingsDialog IsDialogVisible="@IsSettingsDialogVisible" />
+<LLMSettingsDialog IsVisible="@IsSettingsDialogVisible" Position="TopLeft" />
 <FloatingToast IsVisible="@FishTankClient.IsOfflineMode" Position="TopLeft" ShowCloseButton="false"
     ToastMessage="@(new Toast(){Title ="You are offline", Caption="Functionality will be limited."})" />
-
 <FloatingToast IsVisible="@(_toastMessage != null)" Position="TopLeft" OnClose="@CloseToast"
     ToastMessage="@_toastMessage" />
 
@@ -46,14 +45,6 @@
 
     ::deep ChatInput {
         width: 100%;
-    }
-
-    .octopus {
-        position: absolute;
-        bottom: 10px;
-        right: 10px;
-        width: 100px;
-        height: 100px;
     }
 </style>
 
