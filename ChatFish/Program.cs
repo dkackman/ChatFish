@@ -15,6 +15,7 @@ public class Program
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
         builder.Services
+            .AddScoped<LLMService>()
             .AddScoped<FishTankClient>()
             .AddScoped<MessageDispatcher>()
             .AddSingleton<HtmlSanitizer>()
