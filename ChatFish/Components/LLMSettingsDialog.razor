@@ -28,8 +28,15 @@
                     <button id="download" @onclick="InitializeWebLLMEngine" type="button"
                         aria-label="Download selected model">Download</button>
                 </div>
-                <p id="download-status" class="@(isDownloadStatusVisible ? "" : "hidden")" aria-live="polite">
-                    @downloadStatus</p>
+                <div class="@(isDownloadStatusVisible ? "" : "hidden")">
+                    <label for="download-progress" class="visually-hidden">Download progress</label>
+                    <progress id="download-progress" value="@progressValue" max="100" class="w-100 mb-2" aria-valuemin="0"
+                        aria-valuemax="100" aria-valuenow="@progressValue.ToString("F0")"
+                        aria-valuetext="@($"{progressValue:F0}% complete")">
+                        @progressValue.ToString("F0")%
+                    </progress>
+                    <p id="download-status" aria-live="polite">@downloadStatus</p>
+                </div>
             </div>
         </div>
     </div>
@@ -38,24 +45,17 @@
 @code {
     private string downloadStatus = "";
     private bool isDownloadStatusVisible = false;
-    private DotNetObjectReference<LLMSettingsDialog>? _dotNetRef;
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _dotNetRef = DotNetObjectReference.Create(this);
-        }
-    }
+    private double progressValue = 0;
 
     protected override async Task OnInitializedAsync()
     {
         LLMService.SelectedModelChanged += OnSelectedModelChanged;
+        LLMService.UpdateEngineInitProgressChanged += UpdateEngineInitProgress;
         try
         {
             await LLMService.OnInitializedAsync();
         }
-        catch (JSException)
+        catch (Exception)
         {
             Console.WriteLine("Failed to get available models or restore selected model. Using default.");
         }
@@ -66,32 +66,30 @@
         isDownloadStatusVisible = true;
         try
         {
-            downloadStatus = "Initializing WebLLM engine...";
-            await JSRuntime.InvokeVoidAsync("initializeWebLLMEngine", LLMService.SelectedModel, _dotNetRef);
+            await LLMService.InitializeWebLLMEngine();
         }
-        catch (JSException ex)
+        catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
-            downloadStatus = $"Failed to initialize WebLLM engine. {ex.Message}";
         }
     }
 
     private void OnSelectedModelChanged() => StateHasChanged();
 
-
-    [JSInvokable]
     public void UpdateEngineInitProgress(string text, double progress)
     {
-        downloadStatus = $"{text} - {progress:P0}";
+        downloadStatus = text;
+        progressValue = progress * 100; // Convert to percentage
         StateHasChanged();
     }
 
     public void Dispose()
     {
-        _dotNetRef?.Dispose();
         LLMService.SelectedModelChanged -= OnSelectedModelChanged;
+        LLMService.UpdateEngineInitProgressChanged -= UpdateEngineInitProgress;
     }
 }
+
 <style>
     .floating-component {
         width: 350px;
@@ -120,5 +118,25 @@
 
     .hidden {
         display: none;
+    }
+
+    progress {
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    progress::-webkit-progress-bar {
+        background-color: rgba(255, 255, 255, 0.4);
+        border-radius: 5px;
+    }
+
+    progress::-webkit-progress-value {
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 5px;
+    }
+
+    progress::-moz-progress-bar {
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 5px;
     }
 </style>

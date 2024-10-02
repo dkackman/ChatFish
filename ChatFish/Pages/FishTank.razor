@@ -141,6 +141,7 @@
 
         _dotNetRef?.Dispose();
     }
+
     private void HandleCommand(string command)
     {
         switch (command)
@@ -153,6 +154,7 @@
         }
         StateHasChanged();
     }
+
     private void ShowToast(Toast message)
     {
         _toastMessage = message;
