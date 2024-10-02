@@ -132,3 +132,27 @@ window.initializeWebLLMEngine = async (selectedModel, dotNetHelper) => {
 
   await window.engine.reload(selectedModel, config);
 };
+
+window.sendLLMMessage = async (transcript, dotNetHelper) => {
+  if (!window.engine) {
+    throw new Error("WebLLM engine is not initialized");
+  }
+
+  const onUpdate = (curMessage) => {
+    dotNetHelper.invokeMethodAsync("OnMessageUpdate", curMessage);
+  };
+
+  const onFinish = (finalMessage, usage) => {
+    dotNetHelper.invokeMethodAsync("OnMessageFinish", finalMessage, usage);
+  };
+
+  const onError = (error) => {
+    dotNetHelper.invokeMethodAsync("OnMessageError", error.toString());
+  };
+
+  try {
+    await streamingGenerating(transcript, onUpdate, onFinish, onError);
+  } catch (error) {
+    onError(error);
+  }
+};

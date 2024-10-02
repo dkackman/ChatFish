@@ -5,6 +5,14 @@ namespace ChatFish.Services;
 
 public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDisposable
 {
+    private readonly List<LLMessage> _transcript = [
+        new LLMessage
+        {
+            Content = "You are ChatFish, a friendly fish that loves to chat with people. You are the color blue",
+            Role = "system",
+        },
+    ];
+
     private readonly IJSRuntime _JSRuntime = JSRuntime;
     private readonly ILogger<LLMService> _logger = logger;
     private string _selectedModel = DefaultModel;
@@ -31,6 +39,60 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
                 _logger.LogWarning("Invalid model selected: {Model}", value);
             }
         }
+    }
+
+    public event Action<string>? MessageUpdate;
+    public event Action<string, LLMUsage>? MessageFinish;
+    public event Action<string>? MessageError;
+
+    public async Task SendMessage(string message)
+    {
+        message = message.Trim();
+        if (!string.IsNullOrWhiteSpace(message))
+        {
+            var chatMessage = new LLMessage
+            {
+                Content = message,
+                Role = "user",
+            };
+
+            _transcript.Add(chatMessage);
+
+            try
+            {
+                await _JSRuntime.InvokeVoidAsync("sendLLMMessage", _transcript, _dotNetRef);
+            }
+            catch (JSException ex)
+            {
+                _logger.LogError(ex, "Error sending message: {Message}", message);
+                MessageError?.Invoke(ex.Message);
+            }
+        }
+    }
+
+    [JSInvokable]
+    public void OnMessageUpdate(string curMessage)
+    {
+        MessageUpdate?.Invoke(curMessage);
+    }
+
+    [JSInvokable]
+    public void OnMessageFinish(string finalMessage, LLMUsage usage)
+    {
+        var chatMessage = new LLMessage
+        {
+            Content = finalMessage,
+            Role = "assistant",
+        };
+        _transcript.Add(chatMessage);
+        MessageFinish?.Invoke(finalMessage, usage);
+    }
+
+    [JSInvokable]
+    public void OnMessageError(string error)
+    {
+        _logger.LogError("LLM error: {Error}", error);
+        MessageError?.Invoke(error);
     }
 
     public async Task OnInitializedAsync()
@@ -64,7 +126,6 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
 
     public event Action? SelectedModelChanged;
     public event Action<string, double>? UpdateEngineInitProgressChanged;
-    public event Action<string>? ChatMessageReceived;
 
     public void Dispose()
     {
