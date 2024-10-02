@@ -25,9 +25,9 @@
     <ChatInput />
 </div>
 <LLMSettingsDialog IsVisible="@IsSettingsDialogVisible" Position="TopLeft" />
-<FloatingToast IsVisible="@FishTankClient.IsOfflineMode" Position="TopLeft" ShowCloseButton="false"
+<FloatingToast IsVisible="@FishTankClient.IsOfflineMode" Position="BottomRight" ShowCloseButton="false"
     ToastMessage="@(new Toast(){Title ="You are offline", Caption="Functionality will be limited."})" />
-<FloatingToast IsVisible="@(_toastMessage != null)" Position="TopLeft" OnClose="@CloseToast"
+<FloatingToast IsVisible="@(_toastMessage != null)" Position="TopRight" OnClose="@CloseToast"
     ToastMessage="@_toastMessage" />
 
 <style>
@@ -104,7 +104,7 @@
     };
 </script>
 @code {
-    private bool IsSettingsDialogVisible = false;
+    private bool IsSettingsDialogVisible = true;
 
     private Toast? _toastMessage = null;
     private DotNetObjectReference<FishTank>? _dotNetRef;

@@ -4,10 +4,10 @@
 
 @if (IsVisible)
 {
-    <div class="@GetPositionClasses()">
-        <div class="floating-component" role="dialog" aria-modal="true">
+    <div class="@GetPositionClasses()" role="dialog" aria-labelledby="llm-settings-title">
+        <div class="floating-component">
             <div class="floating-header">
-                <strong class="me-auto">Configure Chat LLM Settings</strong>
+                <strong id="llm-settings-title" class="me-auto">Configure Chat LLM Settings</strong>
                 @if (ShowCloseButton)
                 {
                     <button type="button" class="btn-close custom-close floating-close" @onclick="CloseComponent"
@@ -16,15 +16,18 @@
             </div>
             <div class="floating-body">
                 <div class="download-container">
-                    <select id="model-selection" @bind="selectedModel">
+                    <label for="model-selection" class="visually-hidden">Select LLM Model</label>
+                    <select id="model-selection" @bind="SelectedModel" aria-label="Select LLM Model">
                         @foreach (var model in availableModels)
                         {
                             <option value="@model">@model</option>
                         }
                     </select>
-                    <button id="download" @onclick="InitializeWebLLMEngine">Download</button>
+                    <button id="download" @onclick="InitializeWebLLMEngine" type="button"
+                        aria-label="Download selected model">Download</button>
                 </div>
-                <p id="download-status" class="@(isDownloadStatusVisible ? "" : "hidden")">@downloadStatus</p>
+                <p id="download-status" class="@(isDownloadStatusVisible ? "" : "hidden")" aria-live="polite">
+                    @downloadStatus</p>
             </div>
         </div>
     </div>
@@ -32,7 +35,22 @@
 
 @code {
     private List<string> availableModels = new List<string>();
-    private string selectedModel = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
+
+    private string _selectedModel = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
+    public string SelectedModel
+    {
+        get => _selectedModel;
+        set
+        {
+            _selectedModel = value;
+
+            // ok(?) to not await this
+            JSRuntime.InvokeVoidAsync("localStorage.setItem", "selectedModel", _selectedModel);
+
+            StateHasChanged();
+        }
+    }
+
     private string downloadStatus = "";
     private bool isDownloadStatusVisible = false;
     private DotNetObjectReference<LLMSettingsDialog>? _dotNetRef;
@@ -50,11 +68,20 @@
         try
         {
             availableModels = await JSRuntime.InvokeAsync<List<string>>("getAvailableModels");
+
+            // Restore the selected model from local storage
+            var storedModel = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "selectedModel");
+            if (!string.IsNullOrEmpty(storedModel) && availableModels.Contains(storedModel))
+            {
+                // set the variable, not the property to avoid triggering the setter
+                _selectedModel = storedModel;
+                StateHasChanged();
+            }
         }
         catch (JSException)
         {
-            Console.WriteLine("Failed to get available models. Using default.");
-            availableModels = new List<string> { selectedModel };
+            Console.WriteLine("Failed to get available models or restore selected model. Using default.");
+            availableModels = new List<string> { _selectedModel };
         }
     }
 
@@ -63,7 +90,8 @@
         isDownloadStatusVisible = true;
         try
         {
-            await JSRuntime.InvokeVoidAsync("initializeWebLLMEngine", selectedModel, _dotNetRef);
+            downloadStatus = "Initializing WebLLM engine...";
+            await JSRuntime.InvokeVoidAsync("initializeWebLLMEngine", SelectedModel, _dotNetRef);
         }
         catch (JSException ex)
         {
@@ -85,6 +113,13 @@
     }
 }
 <style>
+    .floating-component {
+        width: 350px;
+        /* Set a fixed width */
+        max-width: 100%;
+        /* Ensure it doesn't exceed the screen width on small devices */
+    }
+
     #model-selection,
     #download {
         width: 100%;
