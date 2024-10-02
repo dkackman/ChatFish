@@ -2,6 +2,7 @@
 @using ChatFish.Services
 @inject LLMService LLMService
 @inject IJSRuntime JSRuntime
+@inject ILogger<LLMSettingsDialog> Logger
 @implements IDisposable
 
 @if (IsVisible)
@@ -55,9 +56,9 @@
         {
             await LLMService.OnInitializedAsync();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            Console.WriteLine("Failed to get available models or restore selected model. Using default.");
+            Logger.LogError(ex, "Failed to get available models or restore selected model. Using default.");
         }
     }
 
@@ -70,7 +71,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            Logger.LogError(ex, "Failed to initialize the LLM engine.");
         }
     }
 

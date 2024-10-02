@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.JSInterop;
 
 namespace ChatFish.Services;
@@ -34,7 +35,7 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
 
     public async Task OnInitializedAsync()
     {
-        System.Diagnostics.Debug.Assert(_dotNetRef is null);
+        Debug.Assert(_dotNetRef is null);
         _dotNetRef = DotNetObjectReference.Create(this);
         AvailableModels = await _JSRuntime.InvokeAsync<List<string>>("getAvailableModels");
         SelectedModel = await _JSRuntime.InvokeAsync<string>("localStorage.getItem", "selectedModel");
@@ -42,7 +43,7 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
 
     public async Task InitializeWebLLMEngine()
     {
-        System.Diagnostics.Debug.Assert(_dotNetRef is not null);
+        Debug.Assert(_dotNetRef is not null);
 
         try
         {

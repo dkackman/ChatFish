@@ -1,43 +1,36 @@
+using ChatFish;
 using ChatFish.Components;
 using ChatFish.Services;
 using Ganss.Xss;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-namespace ChatFish;
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
 
-public class Program
-{
-    public static async Task Main(string[] args)
-    {
-        var builder = WebAssemblyHostBuilder.CreateDefault(args);
-        builder.RootComponents.Add<App>("#app");
-        builder.RootComponents.Add<HeadOutlet>("head::after");
+builder.Services
+    .AddScoped<LLMService>()
+    .AddScoped<FishTankClient>()
+    .AddScoped<MessageDispatcher>()
+    .AddSingleton<HtmlSanitizer>()
+    .AddSingleton<Animator>()
+    .AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-        builder.Services
-            .AddScoped<LLMService>()
-            .AddScoped<FishTankClient>()
-            .AddScoped<MessageDispatcher>()
-            .AddSingleton<HtmlSanitizer>()
-            .AddSingleton<Animator>();
+builder.Logging
+    .AddConfiguration(builder.Configuration.GetSection("Logging"))
+    .SetMinimumLevel(LogLevel.Warning);
 
-        builder.Logging
-            .AddConfiguration(builder.Configuration.GetSection("Logging"))
-            .SetMinimumLevel(LogLevel.Trace);
+var host = builder.Build();
 
-        builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-        var host = builder.Build();
+var logger = host.Services
+    .GetRequiredService<ILoggerFactory>()
+    .CreateLogger<Program>();
 
-        var logger = host.Services
-            .GetRequiredService<ILoggerFactory>()
-            .CreateLogger<Program>();
+var fishTankClient = host.Services.GetRequiredService<FishTankClient>();
 
-        var fishTankClient = host.Services.GetRequiredService<FishTankClient>();
+fishTankClient.Initialize();
 
-        fishTankClient.Initialize();
+await host.RunAsync();
 
-        await host.RunAsync();
-
-        logger.LogInformation("Client app started.");
-    }
-}
+logger.LogInformation("Client app started.");
