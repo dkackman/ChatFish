@@ -58,15 +58,7 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
 
             _transcript.Add(chatMessage);
 
-            try
-            {
-                await _JSRuntime.InvokeVoidAsync("sendLLMMessage", _transcript, _dotNetRef);
-            }
-            catch (JSException ex)
-            {
-                _logger.LogError(ex, "Error sending message: {Message}", message);
-                MessageError?.Invoke(ex.Message);
-            }
+            await _JSRuntime.InvokeVoidAsync("sendLLMMessage", _transcript, _dotNetRef);
         }
     }
 

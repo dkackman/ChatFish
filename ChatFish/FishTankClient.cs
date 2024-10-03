@@ -53,8 +53,17 @@ public class FishTankClient(LLMService llmService, ILogger<FishTankClient> logge
     {
         // intentionally not awaited
         _ = DisplayMessageForFish(ClientConnectionId, message);
-        await _llmService.SendMessage(message.Message);
+        try
+        {
+            await _llmService.SendMessage(message.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send message to the hub.");
+            _ = DisplayMessageForFish("ai", ChatMessage.FromMessage("Make sure to select and download a model first."));
+        }
     }
+
     private void OnMessageUpdate(string message)
     {
         if (_fish.TryGetValue("ai", out var fish))
