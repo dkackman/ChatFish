@@ -1,10 +1,12 @@
+using ChatFish.Services;
 using ChatFish.Components;
 using ChatFish.State;
 
 namespace ChatFish;
 
-public class FishTankClient(ILogger<FishTankClient> logger)
+public class FishTankClient(LLMService llmService, ILogger<FishTankClient> logger)
 {
+    private readonly LLMService _llmService = llmService;
     private readonly ILogger<FishTankClient> _logger = logger;
     private Dictionary<string, FishState> _fish = [];
 
@@ -14,7 +16,7 @@ public class FishTankClient(ILogger<FishTankClient> logger)
 
     public event Action? OnStateChanged;
 
-    private const int MessageDisplayDurationMS = 10000;
+    private const int MessageDisplayDurationMS = 30000;
 
     public void Initialize()
     {
@@ -25,7 +27,8 @@ public class FishTankClient(ILogger<FishTankClient> logger)
                 ["ai"] = new FishState { Id = "ai", Color = FishColor.Orange, Scale = "1.0" },
                 [ClientConnectionId] = new FishState { Id = ClientConnectionId, Color = FishColor.Blue, Scale = "0.95" },
             };
-
+            _llmService.MessageFinish += OnMessageUpdate;
+            _llmService.MessageFinish += OnMessageReceived;
             IsOfflineMode = false;
             _logger.LogDebug("ClientId connected: {ClientConnectionId}", ClientConnectionId);
         }
@@ -46,22 +49,25 @@ public class FishTankClient(ILogger<FishTankClient> logger)
         }
     }
 
-    public event Action<FishMessage>? OnMessageReceived;
-
     public async Task SendMessageAsync(ChatMessage message)
     {
         // intentionally not awaited
         _ = DisplayMessageForFish(ClientConnectionId, message);
+        await _llmService.SendMessage(message.Message);
+    }
+    private void OnMessageUpdate(string message)
+    {
+        if (_fish.TryGetValue("ai", out var fish))
+        {
+            fish.CurrentMessage = ChatMessage.FromMessage(message);
+            fish.IsMessageVisible = true;
+            OnStateChanged?.Invoke();
+        }
+    }
 
-        await Task.CompletedTask;
-        //if (_hubConnection is not null && !IsOfflineMode)
-        //{
-        //    await _hubConnection.SendAsync("BroadcastMessage", message);
-        //}
-        //else
-        //{
-        //    _logger.LogWarning("Cannot send message: not connected to hub");
-        //}
+    private void OnMessageReceived(string message)
+    {
+        _ = DisplayMessageForFish("ai", ChatMessage.FromMessage(message));
     }
 
     private async Task DisplayMessageForFish(string fishId, ChatMessage message)

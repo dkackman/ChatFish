@@ -42,7 +42,7 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
     }
 
     public event Action<string>? MessageUpdate;
-    public event Action<string, LLMUsage>? MessageFinish;
+    public event Action<string>? MessageFinish;
     public event Action<string>? MessageError;
 
     public async Task SendMessage(string message)
@@ -77,7 +77,7 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
     }
 
     [JSInvokable]
-    public void OnMessageFinish(string finalMessage, LLMUsage usage)
+    public void OnMessageFinish(string finalMessage)
     {
         var chatMessage = new LLMessage
         {
@@ -85,7 +85,7 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
             Role = "assistant",
         };
         _transcript.Add(chatMessage);
-        MessageFinish?.Invoke(finalMessage, usage);
+        MessageFinish?.Invoke(finalMessage);
     }
 
     [JSInvokable]
