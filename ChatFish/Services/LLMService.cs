@@ -8,7 +8,7 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
     private readonly List<LLMessage> _transcript = [
         new LLMessage
         {
-            Content = "You are ChatFish, a friendly fish that loves to chat with people. You are the color blue",
+            Content = "You are ChatFish, a friendly fish that loves to chat with people. You are the color orange",
             Role = "system",
         },
     ];

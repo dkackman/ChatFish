@@ -9,7 +9,7 @@
 
 <img src="@FishImagePath" alt="@($"{Color} fish")" @ref="fishElement"
     aria-label="@($"{Color} fish {(IsClientFish ? "- your fish" : "")}")"
-    style="@($"position: absolute; left: {_fishAnimation.Position.Left}px; top: {_fishAnimation.Position.Top}px; transform: scale({Scale}); {(IsClientFish ? "filter: drop-shadow(0 0 10px gold); cursor: move;" : "")}")" />
+    style="@($"cursor: move; position: absolute; left: {_fishAnimation.Position.Left}px; top: {_fishAnimation.Position.Top}px; transform: scale({Scale}); {(IsClientFish ? "filter: drop-shadow(0 0 10px gold);" : "")}")" />
 
 <MessageBubble Message="CurrentMessage" IsVisible="IsMessageVisible" Position="@GetBubblePosition()"
     FishDirection="@_fishAnimation.Velocity.Direction" />
@@ -68,12 +68,8 @@
             _fishAnimation.InitializePosition(tankRect);
             StateHasChanged(); // Ensure component re-renders on UI thread
 
-            // only the end user's fish is draggable
-            if (IsClientFish)
-            {
-                _dotNetRef = DotNetObjectReference.Create(this);
-                await JSRuntime.InvokeVoidAsync("makeDraggable", fishElement, _dotNetRef);
-            }
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("makeDraggable", fishElement, _dotNetRef);
         }
     }
 
