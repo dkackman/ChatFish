@@ -49,6 +49,10 @@
 </style>
 
 <script>
+    window.setElementPosition = (element, left, top) => {
+        element.style.left = `${left}px`;
+        element.style.top = `${top}px`;
+    };
     // this is declared here but used over in Fish.razor
     window.getTankRect = () => {
         var element = document.getElementById("fishTank");
