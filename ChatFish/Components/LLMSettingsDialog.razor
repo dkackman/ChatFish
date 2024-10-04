@@ -52,6 +52,7 @@
     {
         LLMService.SelectedModelChanged += OnSelectedModelChanged;
         LLMService.UpdateEngineInitProgressChanged += UpdateEngineInitProgress;
+        LLMService.MessageError += OnMessageError;
         try
         {
             await LLMService.OnInitializedAsync();
@@ -77,6 +78,13 @@
 
     private void OnSelectedModelChanged() => StateHasChanged();
 
+    public void OnMessageError(string text)
+    {
+        downloadStatus = text;
+        progressValue = 0;
+        StateHasChanged();
+    }
+
     public void UpdateEngineInitProgress(string text, double progress)
     {
         downloadStatus = text;
@@ -88,6 +96,7 @@
     {
         LLMService.SelectedModelChanged -= OnSelectedModelChanged;
         LLMService.UpdateEngineInitProgressChanged -= UpdateEngineInitProgress;
+        LLMService.MessageError -= OnMessageError;
     }
 }
 

@@ -2,7 +2,7 @@ import * as webllm from "https://esm.run/@mlc-ai/web-llm";
 
 /*************** WebLLM logic ***************/
 
-async function streamingGenerating(messages, onUpdate, onFinish, onError) {
+async function generating(messages, onFinish, onError) {
   try {
     const completion = await window.engine.chat.completions.create({
       stream: false,
@@ -23,33 +23,39 @@ window.getAvailableModels = () => {
 
 window.initializeWebLLMEngine = async (selectedModel, dotNetHelper) => {
   if (!window.engine) {
-    window.engine = new webllm.MLCEngine();
+    const initProgressCallback = (report) => {
+      dotNetHelper.invokeMethodAsync(
+        "UpdateEngineInitProgress",
+        report.text,
+        report.progress
+      );
+    };
+    try {
+      window.engine = await webllm.CreateWebWorkerMLCEngine(
+        new Worker(new URL("./worker.js", import.meta.url), { type: "module" }),
+        selectedModel,
+        { initProgressCallback: initProgressCallback }
+      );
+    } catch (error) {
+      dotNetHelper.invokeMethodAsync(
+        "OnMessageError",
+        "There was an error downloading this model. Please try a different one."
+      );
+    }
   }
 
-  window.engine.setInitProgressCallback((report) => {
-    dotNetHelper.invokeMethodAsync(
-      "UpdateEngineInitProgress",
-      report.text,
-      report.progress
-    );
-  });
+  // const config = {
+  //   temperature: 1.0,
+  //   top_p: 1,
+  // };
 
-  const config = {
-    temperature: 1.0,
-    top_p: 1,
-  };
-
-  await window.engine.reload(selectedModel, config);
+  // await window.engine.reload(selectedModel, config);
 };
 
 window.sendLLMMessage = async (transcript, dotNetHelper) => {
   if (!window.engine) {
     throw new Error("WebLLM engine is not initialized");
   }
-
-  const onUpdate = (curMessage) => {
-    dotNetHelper.invokeMethodAsync("OnMessageUpdate", curMessage);
-  };
 
   const onFinish = (finalMessage) => {
     dotNetHelper.invokeMethodAsync("OnMessageFinish", finalMessage);
@@ -60,7 +66,7 @@ window.sendLLMMessage = async (transcript, dotNetHelper) => {
   };
 
   try {
-    await streamingGenerating(transcript, onUpdate, onFinish, onError);
+    await generating(transcript, onFinish, onError);
   } catch (error) {
     onError(error);
   }
