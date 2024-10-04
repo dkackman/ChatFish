@@ -11,8 +11,8 @@
     aria-label="@($"{Color} fish {(IsClientFish ? "- your fish" : "")}")"
     style="@($"cursor: move; position: absolute; left: {_fishAnimation.Position.Left}px; top: {_fishAnimation.Position.Top}px; transform: scale({Scale}); {(IsClientFish ? "filter: drop-shadow(0 0 10px gold);" : "")}")" />
 
-<MessageBubble Message="CurrentMessage" IsVisible="IsMessageVisible" Position="@GetBubblePosition()"
-    FishDirection="@_fishAnimation.Velocity.Direction" FishElement="@fishElement" />
+<MessageBubble Message="CurrentMessage" IsVisible="IsMessageVisible" FishDirection="@_fishAnimation.Velocity.Direction"
+    FishElement="@fishElement" />
 
 @code {
     [Parameter]
@@ -49,14 +49,6 @@
         _fishAnimation.MoveFish(new Point(left, top));
         _fishAnimation.Enabled = true;
         await Task.CompletedTask;
-    }
-
-    public string GetBubblePosition()
-    {
-        var leftPosition = _fishAnimation.Velocity.Direction == Direction.Right
-        ? _fishAnimation.Position.Left + _fishAnimation.Size.Width
-        : _fishAnimation.Position.Left;
-        return $"left: {leftPosition}px; top: {_fishAnimation.Position.Top}px;";
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

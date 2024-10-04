@@ -5,14 +5,17 @@
 
 <div @ref="bubbleElement"
     class="message-bubble @(IsVisible ? "visible" : "hidden") @Sanitizer.Sanitize(Message.Modifier) @FishDirection.ToString().ToLower()"
-    style="@Position" role="status" aria-live="polite">
+    role="status" aria-live="polite">
     @(Sanitizer.Sanitize(Message.Message))
 </div>
 
 <style>
     .message-bubble {
         position: absolute;
-        transform: translateY(-100%);
+        /* Remove any transforms that offset the bubble */
+        /* transform: translate(-50%, -50%); */
+        /* transform: translateY(-100%); */
+        /* ... existing styles ... */
         background-color: rgba(255, 255, 255, 0.4);
         border: 2px solid rgba(255, 255, 255, 0.6);
         border-radius: 50%;
@@ -30,6 +33,12 @@
         text-align: center;
     }
 
+    /* Align the bubble so it's centered at its position */
+    .message-bubble.left,
+    .message-bubble.right {
+        transform: translate(-50%, -50%);
+    }
+
     .message-bubble::before,
     .message-bubble::after {
         content: '';
@@ -39,56 +48,84 @@
         border-radius: 50%;
     }
 
-    .message-bubble::before {
-        width: 15px;
-        height: 15px;
-        bottom: -20px;
-        animation: float 3s infinite ease-in-out 0.5s;
-    }
-
-    .message-bubble::after {
-        width: 10px;
-        height: 10px;
-        bottom: -35px;
-        animation: float 3s infinite ease-in-out 1s;
+    /* Trailing bubbles for left-facing fish */
+    .message-bubble.left::before,
+    .message-bubble.left::after {
+        animation: floatLeft 3s infinite ease-in-out;
     }
 
     .message-bubble.left::before {
-        left: 20%;
+        width: 15px;
+        height: 15px;
+        left: 50%;
+        top: 110%;
+        transform: translate(0%, -50%);
     }
 
     .message-bubble.left::after {
-        left: 40%;
+        width: 10px;
+        height: 10px;
+        left: 95%;
+        top: 130%;
+        transform: translate(0%, -50%);
+    }
+
+    /* Trailing bubbles for right-facing fish */
+    .message-bubble.right::before,
+    .message-bubble.right::after {
+        animation: floatRight 3s infinite ease-in-out;
     }
 
     .message-bubble.right::before {
-        left: auto;
-        right: 20%;
+        width: 15px;
+        height: 15px;
+        right: 50%;
+        top: 110%;
+        transform: translate(0%, -50%);
     }
 
     .message-bubble.right::after {
-        left: auto;
-        right: 40%;
+        width: 10px;
+        height: 10px;
+        right: 95%;
+        top: 130%;
+        transform: translate(0%, -50%);
     }
 
-    .message-bubble.right {
-        transform: translate(-100%, -100%);
+    @@keyframes floatLeft {
+
+        0%,
+        100% {
+            opacity: 1;
+            transform: translate(0%, -50%) scale(1);
+        }
+
+        50% {
+            opacity: 0.5;
+            transform: translate(10%, -60%) scale(0.8);
+        }
+    }
+
+    @@keyframes floatRight {
+
+        0%,
+        100% {
+            opacity: 1;
+            transform: translate(0%, -50%) scale(1);
+        }
+
+        50% {
+            opacity: 0.5;
+            transform: translate(-10%, -60%) scale(0.8);
+        }
     }
 
     .message-bubble.left {
         transform: translateY(-100%);
     }
 
-    @@keyframes float {
-
-        0%,
-        100% {
-            transform: translate(-50%, -50%);
-        }
-
-        50% {
-            transform: translate(-50%, -60%);
-        }
+    .message-bubble.right {
+        transform: translate(-100%, -100%);
     }
 
     .message-bubble.hidden {
@@ -138,11 +175,27 @@
         var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", FishElement);
         var bubbleRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", bubbleElement);
 
-        var leftPosition = FishDirection == Direction.Right
-        ? fishRect.Right
-        : fishRect.Left;
-        var topPosition = fishRect.Top - bubbleRect.Height;
+        double bubbleX;
+        double bubbleY;
 
-        await JSRuntime.InvokeVoidAsync("setElementPosition", bubbleElement, leftPosition, topPosition);
+        // Offsets to position the bubble above and ahead of the fish
+        double xOffset;
+        double yOffset = bubbleRect.Height; // Position the bubble above the fish
+
+        if (FishDirection == Direction.Right)
+        {
+            xOffset = fishRect.Width * 0.3; // Adjust as needed for horizontal offset
+            bubbleX = fishRect.Left + fishRect.Width + xOffset;
+        }
+        else
+        {
+            xOffset = fishRect.Width * 0.3; // Adjust as needed for horizontal offset
+            bubbleX = fishRect.Left - bubbleRect.Width - xOffset;
+        }
+
+        // Position the bubble above the fish
+        bubbleY = fishRect.Top - bubbleRect.Height;// * 0.5; // Adjust as needed for vertical offset
+
+        await JSRuntime.InvokeVoidAsync("setElementPosition", bubbleElement, bubbleX, bubbleY);
     }
 }
