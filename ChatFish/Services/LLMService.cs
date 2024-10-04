@@ -101,6 +101,7 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
 
         try
         {
+            await _JSRuntime.InvokeVoidAsync("resetLLMEngine", _dotNetRef);
             UpdateEngineInitProgress("Initializing WebLLM engine...", 0);
             await _JSRuntime.InvokeVoidAsync("initializeWebLLMEngine", SelectedModel, _dotNetRef);
         }

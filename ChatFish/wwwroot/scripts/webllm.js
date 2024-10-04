@@ -4,11 +4,13 @@ import * as webllm from "https://esm.run/@mlc-ai/web-llm";
 
 async function generating(messages, onFinish, onError) {
   try {
-    const completion = await window.engine.chat.completions.create({
-      stream: false,
-      messages,
-    });
+    const request = {
+      messages: messages,
+      temperature: 0.5,
+      top_p: 1,
+    };
 
+    await window.engine.chat.completions.create(request);
     const finalMessage = await window.engine.getMessage();
     onFinish(finalMessage);
   } catch (err) {
@@ -19,6 +21,10 @@ async function generating(messages, onFinish, onError) {
 // interop methods called from razor code
 window.getAvailableModels = () => {
   return webllm.prebuiltAppConfig.model_list.map((m) => m.model_id);
+};
+
+window.resetLLMEngine = () => {
+  window.engine = undefined;
 };
 
 window.initializeWebLLMEngine = async (selectedModel, dotNetHelper) => {
@@ -43,13 +49,6 @@ window.initializeWebLLMEngine = async (selectedModel, dotNetHelper) => {
       );
     }
   }
-
-  // const config = {
-  //   temperature: 1.0,
-  //   top_p: 1,
-  // };
-
-  // await window.engine.reload(selectedModel, config);
 };
 
 window.sendLLMMessage = async (transcript, dotNetHelper) => {
