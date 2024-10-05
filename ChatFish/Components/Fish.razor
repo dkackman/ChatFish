@@ -11,8 +11,11 @@
     style="left: @(_fishAnimation.Position.Left)px; top: @(_fishAnimation.Position.Top)px;">
     <MessageBubble Message="CurrentMessage" IsVisible="IsMessageVisible"
         FishDirection="@_fishAnimation.Velocity.Direction" />
-    <img class="fish-img @_fishAnimation.Velocity.Direction.ToString().ToLower()" src="@FishImagePath"
-        alt="@($"{Color} fish")" aria-label="@($"{Color} fish {(IsClientFish ? "- your fish" : "")}")" />
+    <div
+        class="fish-wrapper @(_fishAnimation.Velocity.Direction.ToString().ToLower()) @(IsMessageVisible ? "message-visible" : "")">
+        <img class="fish-img" src="@FishImagePath" alt="@($"{Color} fish")"
+            aria-label="@($"{Color} fish {(IsClientFish ? "- your fish" : "")}")" />
+    </div>
 </div>
 <style>
     .fish-container {
@@ -22,12 +25,36 @@
         flex-direction: column;
     }
 
+    .fish-img {
+        z-index: 1;
+    }
+
     .fish-img.right {
         align-self: flex-start;
     }
 
     .fish-img.left {
         align-self: flex-end;
+    }
+
+    .fish-wrapper {
+        transition: transform 1s ease-in-out;
+    }
+
+    .fish-wrapper.right {
+        transform: translateX(0);
+    }
+
+    .fish-wrapper.right.message-visible {
+        transform: translateX(-50px);
+    }
+
+    .fish-wrapper.left {
+        transform: translateX(0);
+    }
+
+    .fish-wrapper.left.message-visible {
+        transform: translateX(50px);
     }
 </style>
 @code {
