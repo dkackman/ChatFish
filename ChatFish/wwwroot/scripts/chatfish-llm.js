@@ -43,7 +43,7 @@ window.initializeWebLLMEngine = async (selectedModel, dotNetHelper) => {
     } catch (error) {
       dotNetHelper.invokeMethodAsync(
         "OnMessageError",
-        "There was an error downloading this model. Please try a different one."
+        "There was an error downloading this model.\n\n" + error.toString()
       );
     }
   }
