@@ -9,31 +9,22 @@
 
 <style>
     .message-bubble {
-    @*bottom:100%;/*Positionthebubbleabovethefish*/left:50%;/*Centerhorizontallyrelativetothefish*/transform:translateX(-50%);*@
-        /* Adjust horizontal centering */
-        background-color: rgba(255, 255, 255, 0.4);
+        background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.3));
         border: 2px solid rgba(255, 255, 255, 0.6);
-
-        /* Adjusted border-radius and size properties */
-        border-radius: 30px;
-        /* Fixed radius for rounded corners */
-        padding: 10px 15px;
-        /* Increased horizontal padding */
-        max-width: 250px;
-        /* Allow bubble to expand more horizontally */
+        /* Increase border-radius for a more circular shape */
+        border-radius: 50%;
+        padding: 30px;
+        /* Adjust padding for better content fit */
+        max-width: 200px;
         min-width: 100px;
-        /* Prevent bubble from becoming too narrow */
         word-wrap: break-word;
         overflow-wrap: break-word;
-        /* Ensure long words break appropriately */
         word-break: break-word;
-        /* Adjusted to handle long words */
         white-space: normal;
-        /* Ensure text wraps within the bubble */
-
         transition: opacity 0.5s ease-in-out;
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3),
-            inset 0 0 20px rgba(255, 255, 255, 0.3);
+        box-shadow: inset -5px -5px 15px rgba(255, 255, 255, 0.5),
+            inset 5px 5px 15px rgba(255, 255, 255, 0.2);
+
         backdrop-filter: blur(2px);
         animation: float 4s infinite ease-in-out;
         text-align: center;
