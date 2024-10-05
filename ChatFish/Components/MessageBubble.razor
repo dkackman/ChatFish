@@ -43,6 +43,18 @@
         /* align-items: center; */
     }
 
+    .message-bubble::after {
+        content: '';
+        position: absolute;
+        top: -10%;
+        left: -10%;
+        width: 120%;
+        height: 120%;
+        background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.5), transparent);
+        transform: rotate(45deg);
+        border-radius: 50%;
+    }
+
     /* Adjust the bubble position based on the fish direction */
     .message-bubble.left {
         transform: translateX(50%);
