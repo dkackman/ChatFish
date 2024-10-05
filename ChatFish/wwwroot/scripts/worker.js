@@ -1,4 +1,4 @@
-import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+import * as webllm from "./web-llm.js";
 
 // Hookup an engine to a worker handler
 const handler = new webllm.WebWorkerMLCEngineHandler();
