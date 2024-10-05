@@ -7,13 +7,29 @@
 @inject IJSRuntime JSRuntime
 @inject Animator Animator
 
-<img src="@FishImagePath" alt="@($"{Color} fish")" @ref="fishElement"
-    aria-label="@($"{Color} fish {(IsClientFish ? "- your fish" : "")}")"
-    style="@($"cursor: move; position: absolute; left: {_fishAnimation.Position.Left}px; top: {_fishAnimation.Position.Top}px; transform: scale({Scale}); {(IsClientFish ? "filter: drop-shadow(0 0 10px gold);" : "")}")" />
+<div @ref="fishElement" class="fish-container @_fishAnimation.Velocity.Direction.ToString().ToLower()"
+    style="left: @(_fishAnimation.Position.Left)px; top: @(_fishAnimation.Position.Top)px;">
+    <MessageBubble Message="CurrentMessage" IsVisible="IsMessageVisible"
+        FishDirection="@_fishAnimation.Velocity.Direction" />
+    <img class="fish-img @_fishAnimation.Velocity.Direction.ToString().ToLower()" src="@FishImagePath"
+        alt="@($"{Color} fish")" aria-label="@($"{Color} fish {(IsClientFish ? "- your fish" : "")}")" />
+</div>
+<style>
+    .fish-container {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+    }
 
-<MessageBubble Message="CurrentMessage" IsVisible="IsMessageVisible" FishDirection="@_fishAnimation.Velocity.Direction"
-    FishElement="@fishElement" />
+    .fish-container.right .fish-img {
+        align-self: flex-start;
+    }
 
+    .fish-container.left .fish-img {
+        align-self: flex-end;
+    }
+</style>
 @code {
     [Parameter]
     public FishColor Color { get; set; }

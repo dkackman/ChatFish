@@ -1,46 +1,65 @@
 @using Ganss.Xss
 @using ChatFish.State
-@inject IJSRuntime JSRuntime
 @inject HtmlSanitizer Sanitizer
 
-<div @ref="bubbleElement"
-    class="message-bubble @(IsVisible ? "visible" : "hidden") @Sanitizer.Sanitize(Message.Modifier) @FishDirection.ToString().ToLower()"
+<div class="message-bubble @(IsVisible ? "visible" : "hidden") @Sanitizer.Sanitize(Message.Modifier) @FishDirection.ToString().ToLower()"
     role="status" aria-live="polite">
     @(Sanitizer.Sanitize(Message.Message))
 </div>
 
 <style>
     .message-bubble {
-        position: absolute;
-        /* Remove any transforms that offset the bubble */
-        /* transform: translate(-50%, -50%); */
-        /* transform: translateY(-100%); */
-        /* ... existing styles ... */
+    @*bottom:100%;/*Positionthebubbleabovethefish*/left:50%;/*Centerhorizontallyrelativetothefish*/transform:translateX(-50%);*@
+        /* Adjust horizontal centering */
         background-color: rgba(255, 255, 255, 0.4);
         border: 2px solid rgba(255, 255, 255, 0.6);
-        border-radius: 50%;
-        padding: 10px;
+
+        /* Adjusted border-radius and size properties */
+        border-radius: 30px;
+        /* Fixed radius for rounded corners */
+        padding: 10px 15px;
+        /* Increased horizontal padding */
         max-width: 250px;
+        /* Allow bubble to expand more horizontally */
+        min-width: 100px;
+        /* Prevent bubble from becoming too narrow */
         word-wrap: break-word;
+        overflow-wrap: break-word;
+        /* Ensure long words break appropriately */
+        word-break: break-word;
+        /* Adjusted to handle long words */
+        white-space: normal;
+        /* Ensure text wraps within the bubble */
+
         transition: opacity 0.5s ease-in-out;
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3),
+            inset 0 0 20px rgba(255, 255, 255, 0.3);
         backdrop-filter: blur(2px);
         animation: float 4s infinite ease-in-out;
-        /* Add these properties to center the text */
-        display: flex;
-        justify-content: center;
-        align-items: center;
         text-align: center;
+        /* Removed display: flex and related properties */
+        /* display: flex; */
+        /* justify-content: center; */
+        /* align-items: center; */
     }
 
-    /* Align the bubble so it's centered at its position */
-    .message-bubble.left,
+    /* Adjust the bubble position based on the fish direction */
+    .message-bubble.left {
+        transform: translateX(50%);
+
+        /* Move bubble ahead of left-facing fish */
+    }
+
     .message-bubble.right {
-        transform: translate(-50%, -50%);
+        transform: translateX(-50%);
+
+        /* Move bubble ahead of right-facing fish */
     }
 
-    .message-bubble::before,
-    .message-bubble::after {
+    /* Trailing bubbles for left-facing fish */
+    .message-bubble.left::before,
+    .message-bubble.left::after {
+        animation: floatLeft 3s infinite ease-in-out;
         content: '';
         position: absolute;
         background-color: rgba(255, 255, 255, 0.4);
@@ -48,48 +67,47 @@
         border-radius: 50%;
     }
 
-    /* Trailing bubbles for left-facing fish */
-    .message-bubble.left::before,
-    .message-bubble.left::after {
-        animation: floatLeft 3s infinite ease-in-out;
-    }
-
     .message-bubble.left::before {
         width: 15px;
         height: 15px;
         left: 50%;
         top: 110%;
-        transform: translate(0%, -50%);
+        transform: translateX(-50%);
     }
 
     .message-bubble.left::after {
         width: 10px;
         height: 10px;
-        left: 95%;
+        left: 60%;
         top: 130%;
-        transform: translate(0%, -50%);
+        transform: translateX(-50%);
     }
 
     /* Trailing bubbles for right-facing fish */
     .message-bubble.right::before,
     .message-bubble.right::after {
         animation: floatRight 3s infinite ease-in-out;
+        content: '';
+        position: absolute;
+        background-color: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
     }
 
     .message-bubble.right::before {
         width: 15px;
         height: 15px;
-        right: 50%;
+        left: 50%;
         top: 110%;
-        transform: translate(0%, -50%);
+        transform: translateX(-50%);
     }
 
     .message-bubble.right::after {
         width: 10px;
         height: 10px;
-        right: 95%;
+        left: 40%;
         top: 130%;
-        transform: translate(0%, -50%);
+        transform: translateX(-50%);
     }
 
     @@keyframes floatLeft {
@@ -97,12 +115,12 @@
         0%,
         100% {
             opacity: 1;
-            transform: translate(0%, -50%) scale(1);
+            transform: translateX(-50%) translateY(0) scale(1);
         }
 
         50% {
             opacity: 0.5;
-            transform: translate(10%, -60%) scale(0.8);
+            transform: translateX(-60%) translateY(-10%) scale(0.8);
         }
     }
 
@@ -111,21 +129,13 @@
         0%,
         100% {
             opacity: 1;
-            transform: translate(0%, -50%) scale(1);
+            transform: translateX(-50%) translateY(0) scale(1);
         }
 
         50% {
             opacity: 0.5;
-            transform: translate(-10%, -60%) scale(0.8);
+            transform: translateX(-40%) translateY(-10%) scale(0.8);
         }
-    }
-
-    .message-bubble.left {
-        transform: translateY(-100%);
-    }
-
-    .message-bubble.right {
-        transform: translate(-100%, -100%);
     }
 
     .message-bubble.hidden {
@@ -150,52 +160,11 @@
         color: #60666e;
     }
 
-    // Add more modifier styles as needed
+    /* ... Add more modifier styles as needed ... */
 </style>
 
 @code {
     [Parameter] public ChatMessage Message { get; set; } = new();
     [Parameter] public bool IsVisible { get; set; }
-    [Parameter] public string Position { get; set; } = "";
     [Parameter] public Direction FishDirection { get; set; }
-    [Parameter] public ElementReference FishElement { get; set; }
-
-    private ElementReference bubbleElement;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (IsVisible)
-        {
-            await AdjustBubblePosition();
-        }
-    }
-
-    private async Task AdjustBubblePosition()
-    {
-        var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", FishElement);
-        var bubbleRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", bubbleElement);
-
-        double bubbleX;
-        double bubbleY;
-
-        // Offsets to position the bubble above and ahead of the fish
-        double xOffset;
-        double yOffset = bubbleRect.Height; // Position the bubble above the fish
-
-        if (FishDirection == Direction.Right)
-        {
-            xOffset = fishRect.Width * 0.3; // Adjust as needed for horizontal offset
-            bubbleX = fishRect.Left + fishRect.Width + xOffset;
-        }
-        else
-        {
-            xOffset = fishRect.Width * 0.3; // Adjust as needed for horizontal offset
-            bubbleX = fishRect.Left - bubbleRect.Width - xOffset;
-        }
-
-        // Position the bubble above the fish
-        bubbleY = fishRect.Top - bubbleRect.Height;// * 0.5; // Adjust as needed for vertical offset
-
-        await JSRuntime.InvokeVoidAsync("setElementPosition", bubbleElement, bubbleX, bubbleY);
-    }
 }
