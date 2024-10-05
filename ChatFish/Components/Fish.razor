@@ -7,7 +7,7 @@
 @inject IJSRuntime JSRuntime
 @inject Animator Animator
 
-<div @ref="fishElement" class="fish-container @_fishAnimation.Velocity.Direction.ToString().ToLower()"
+<div @ref="fishElement" class="fish-container"
     style="left: @(_fishAnimation.Position.Left)px; top: @(_fishAnimation.Position.Top)px;">
     <MessageBubble Message="CurrentMessage" IsVisible="IsMessageVisible"
         FishDirection="@_fishAnimation.Velocity.Direction" />
@@ -22,11 +22,11 @@
         flex-direction: column;
     }
 
-    .fish-container.right .fish-img {
+    .fish-img.right {
         align-self: flex-start;
     }
 
-    .fish-container.left .fish-img {
+    .fish-img.left {
         align-self: flex-end;
     }
 </style>
