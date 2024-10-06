@@ -2,6 +2,39 @@ namespace ChatFish.State;
 
 public class ChatMessage
 {
+    public string Message { get; init; } = "";
+    public string Modifier { get; init; } = "";
+
+    public bool IsCommand => Commands.ContainsKey(Modifier);
+    public bool IsEmpty => string.IsNullOrWhiteSpace(Message) && string.IsNullOrWhiteSpace(Modifier);
+
+    // Override Equals method
+    public override bool Equals(object? obj) => Equals(obj as ChatMessage);
+
+    // Implement IEquatable<ChatMessage>
+    public bool Equals(ChatMessage? other)
+    {
+        if (other == null)
+            return false;
+
+        return Message == other.Message && Modifier == other.Modifier;
+    }
+
+    // Override GetHashCode method
+    public override int GetHashCode() => HashCode.Combine(Message, Modifier);
+
+    // Equality operator
+    public static bool operator ==(ChatMessage? left, ChatMessage? right)
+    {
+        if (left is null)
+            return right is null;
+
+        return left.Equals(right);
+    }
+
+    // Inequality operator
+    public static bool operator !=(ChatMessage? left, ChatMessage? right) => !(left == right);
+    
     public static readonly IReadOnlyDictionary<string, string> Commands = new Dictionary<string, string>
     {
         {"about", "Show the about page"},
@@ -14,12 +47,6 @@ public class ChatMessage
         {"shout", "Shout a chat message"},
         {"whisper", "Whisper a chat message"},
     };
-
-    public string Message { get; init; } = "";
-    public string Modifier { get; init; } = "";
-
-    public bool IsCommand => Commands.ContainsKey(Modifier);
-    public bool IsEmpty => string.IsNullOrWhiteSpace(Message) && string.IsNullOrWhiteSpace(Modifier);
 
     public static ChatMessage FromMessage(string message)
     {
