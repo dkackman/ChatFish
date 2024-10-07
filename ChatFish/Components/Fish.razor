@@ -9,12 +9,13 @@
 
 <div @ref="fishElement" class="fish-container"
     style="left: @(_fishAnimation.Position.Left)px; top: @(_fishAnimation.Position.Top)px;">
-    <MessageBubble Message="CurrentMessage" IsVisible="IsMessageVisible"
+    <MessageBubble Message="@State.CurrentMessage" IsVisible="@State.IsMessageVisible"
         FishDirection="@_fishAnimation.Velocity.Direction" />
     <div
-        class="fish-wrapper @(_fishAnimation.Velocity.Direction.ToString().ToLower()) @(IsMessageVisible ? "message-visible" : "")">
-        <img class="fish-img" src="@FishImagePath" alt="@($"{Color} fish")"
-            aria-label="@($"{Color} fish {(IsClientFish ? "- your fish" : "")}")" />
+        class="fish-wrapper @(_fishAnimation.Velocity.Direction.ToString().ToLower()) @(State.IsMessageVisible ? "message-visible" : "")">
+        <img class="fish-img" src="@FishImagePath" alt="@($"{State.Color} fish")"
+            aria-label="@($"{State.Color} fish {(IsClientFish ? "- your fish" : "")}")"
+            style="transform: scale(@State.Scale)" />
     </div>
 </div>
 <style>
@@ -59,21 +60,12 @@
 </style>
 @code {
     [Parameter]
-    public FishColor Color { get; set; }
+    public FishState State { get; set; } = new();
 
     [Parameter]
     public bool IsClientFish { get; set; }
 
-    [Parameter]
-    public string Scale { get; set; } = "100.0";
-
-    [Parameter]
-    public ChatMessage CurrentMessage { get; set; } = new();
-
-    [Parameter]
-    public bool IsMessageVisible { get; set; } = false;
-
-    public string FishImagePath => $"fish/{Color}/{_fishAnimation.Velocity.Direction}-{GetFrameDuration()}.png";
+    public string FishImagePath => $"fish/{State.Color}/{_fishAnimation.Velocity.Direction}-{GetFrameDuration()}.png";
 
     private DotNetObjectReference<Fish>? _dotNetRef;
     private ElementReference fishElement;
@@ -105,7 +97,16 @@
 
             _dotNetRef = DotNetObjectReference.Create(this);
             await JSRuntime.InvokeVoidAsync("makeDraggable", fishElement, _dotNetRef);
+            if (State != null)
+            {
+                State.MessageChanged += MessageChanged;
+            }
         }
+    }
+
+    private void MessageChanged()
+    {
+        StateHasChanged();
     }
 
     protected override void OnInitialized() => Animator.OnAnimationTick += OnTimerElapsedAsync;
@@ -143,8 +144,9 @@
 
     public void Dispose()
     {
-        _fishAnimation.Enabled = false;
         Animator.OnAnimationTick -= OnTimerElapsedAsync;
+        _fishAnimation.Enabled = false;
         _dotNetRef?.Dispose();
+        State?.Dispose();
     }
 }
