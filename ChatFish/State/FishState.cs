@@ -5,9 +5,10 @@ namespace ChatFish.State;
 
 public class FishState : IDisposable
 {
+    private const int MessageVisibilityDurationMS = 25000;
     private readonly object _lock = new();
     private ChatMessage _currentMessage = new();
-    private readonly System.Timers.Timer _messageTimer = new(5000);
+    private readonly System.Timers.Timer _messageTimer = new(MessageVisibilityDurationMS);
 
     public string Id { get; init; } = string.Empty;
     public FishColor Color { get; init; } = FishColor.Orange;
@@ -16,6 +17,7 @@ public class FishState : IDisposable
     public bool IsMessageVisible { get; private set; } = false;
 
     public event Action? MessageChanged;
+
     public FishState()
     {
         _messageTimer.Elapsed += OnMessageTimerElapsed;
@@ -60,8 +62,5 @@ public class FishState : IDisposable
         }
     }
 
-    public void Dispose()
-    {
-        _messageTimer?.Dispose();
-    }
+    public void Dispose() => _messageTimer.Dispose();
 }
