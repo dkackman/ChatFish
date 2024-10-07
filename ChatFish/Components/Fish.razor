@@ -106,9 +106,7 @@
 
     private void MessageChanged()
     {
-
         StateHasChanged();
-
     }
 
     protected override void OnInitialized() => Animator.OnAnimationTick += OnTimerElapsedAsync;
@@ -146,8 +144,8 @@
 
     public void Dispose()
     {
-        _fishAnimation.Enabled = false;
         Animator.OnAnimationTick -= OnTimerElapsedAsync;
+        _fishAnimation.Enabled = false;
         _dotNetRef?.Dispose();
         State?.Dispose();
     }

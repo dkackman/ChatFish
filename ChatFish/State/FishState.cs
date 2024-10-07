@@ -1,58 +1,67 @@
 using ChatFish.Components;
+using System.Timers;
 
 namespace ChatFish.State;
 
 public class FishState : IDisposable
 {
+    private readonly object _lock = new();
     private ChatMessage _currentMessage = new();
-    private bool disposedValue;
-    private CancellationTokenSource _messageCts = new();
+    private readonly System.Timers.Timer _messageTimer = new(5000);
 
     public string Id { get; init; } = string.Empty;
     public FishColor Color { get; init; } = FishColor.Orange;
     public string Scale { get; init; } = "100.0";
+
     public bool IsMessageVisible { get; private set; } = false;
+
+    public event Action? MessageChanged;
+    public FishState()
+    {
+        _messageTimer.Elapsed += OnMessageTimerElapsed;
+        _messageTimer.AutoReset = false;
+    }
 
     public ChatMessage CurrentMessage
     {
-        get => _currentMessage;
+        get
+        {
+            lock (_lock)
+            {
+                return _currentMessage;
+            }
+        }
         set
         {
-            if (value != _currentMessage)
+            lock (_lock)
             {
-                _currentMessage = value;
-                OnMessageChanged();
+                if (value != _currentMessage)
+                {
+                    _currentMessage = value;
+                    IsMessageVisible = !_currentMessage.IsEmpty;
+                    MessageChanged?.Invoke();
+
+                    _messageTimer.Stop();
+                    if (IsMessageVisible)
+                    {
+                        _messageTimer.Start();
+                    }
+                }
             }
         }
     }
 
-    private void OnMessageChanged()
+    private void OnMessageTimerElapsed(object? sender, ElapsedEventArgs e)
     {
-        IsMessageVisible = !_currentMessage.IsEmpty;
-        MessageChanged?.Invoke();
-    }
-
-    public Action? MessageChanged;
-
-    override public string ToString() => $"[Id: {Id}, Color: {Color}]";
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!disposedValue)
+        lock (_lock)
         {
-            if (disposing)
-            {
-                _messageCts.Dispose();
-            }
-
-            disposedValue = true;
+            IsMessageVisible = false;
+            MessageChanged?.Invoke();
         }
     }
 
     public void Dispose()
     {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
+        _messageTimer?.Dispose();
     }
 }
