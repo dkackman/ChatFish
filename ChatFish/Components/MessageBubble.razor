@@ -26,7 +26,6 @@
             inset 5px 5px 15px rgba(255, 255, 255, 0.2);
 
         backdrop-filter: blur(2px);
-        animation: float 4s infinite ease-in-out;
         text-align: center;
         /* Removed display: flex and related properties */
         /* display: flex; */
@@ -48,13 +47,13 @@
 
     /* Adjust the bubble position based on the fish direction */
     .message-bubble.left {
-        transform: translateX(50%);
+        transform: translateX(-33%);
 
         /* Move bubble ahead of left-facing fish */
     }
 
     .message-bubble.right {
-        transform: translateX(-50%);
+        transform: translateX(33%);
 
         /* Move bubble ahead of right-facing fish */
     }
