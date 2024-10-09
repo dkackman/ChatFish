@@ -11,20 +11,17 @@
     .message-bubble {
         background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.3));
         border: 2px solid rgba(255, 255, 255, 0.6);
-        /* Increase border-radius for a more circular shape */
         border-radius: 50%;
         padding: 30px;
-        /* Adjust padding for better content fit */
-        max-width: 200px;
+        max-width: 250px;
         min-width: 100px;
         word-wrap: break-word;
         overflow-wrap: break-word;
         word-break: break-word;
         white-space: normal;
-        transition: opacity 0.5s ease-in-out;
+        transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
         box-shadow: inset -5px -5px 15px rgba(255, 255, 255, 0.5),
             inset 5px 5px 15px rgba(255, 255, 255, 0.2);
-
         backdrop-filter: blur(2px);
         text-align: center;
     }
@@ -43,13 +40,13 @@
 
     /* Adjust the bubble position based on the fish direction */
     .message-bubble.left {
-        transform: translateX(-33%);
+        transform: translateX(-43%);
 
         /* Move bubble ahead of left-facing fish */
     }
 
     .message-bubble.right {
-        transform: translateX(33%);
+        transform: translateX(43%);
 
         /* Move bubble ahead of right-facing fish */
     }
@@ -69,7 +66,7 @@
         width: 15px;
         height: 15px;
         left: 50%;
-        top: 110%;
+        top: 105%;
         transform: translateX(-50%);
     }
 
@@ -77,7 +74,7 @@
         width: 10px;
         height: 10px;
         left: 60%;
-        top: 130%;
+        top: 110%;
         transform: translateX(-50%);
     }
 
