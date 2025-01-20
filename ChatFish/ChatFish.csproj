@@ -13,7 +13,7 @@
 	<ItemGroup>
 		<PackageReference Include="HtmlSanitizer" Version="8.1.870" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.10" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.10" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.1" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="8.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
