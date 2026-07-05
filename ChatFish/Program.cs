@@ -23,14 +23,8 @@ builder.Logging
 
 var host = builder.Build();
 
-var logger = host.Services
-    .GetRequiredService<ILoggerFactory>()
-    .CreateLogger<Program>();
-
 var fishTankClient = host.Services.GetRequiredService<FishTankClient>();
 
 fishTankClient.Initialize();
 
 await host.RunAsync();
-
-logger.LogInformation("Client app started.");

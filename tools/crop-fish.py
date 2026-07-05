@@ -1,3 +1,10 @@
+# Dev-only asset tool: crops transparent padding from the animated fish PNGs.
+# Not part of the app build/output. Run it from the fish assets directory:
+#
+#   cd ChatFish/wwwroot/fish && python ../../../tools/crop-fish.py
+#
+# Requires: pillow, numpy
+
 from PIL import Image
 import numpy as np
 import os

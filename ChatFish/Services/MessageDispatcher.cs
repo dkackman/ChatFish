@@ -52,8 +52,11 @@ public class MessageDispatcher(FishTankClient fishTankClient, ILogger<MessageDis
 
             // Add more commands here as needed
             default:
+                // ProcessCommand only runs for commands validated by ChatMessage.IsCommand,
+                // so a command reaching here is known but handled by a subscriber (e.g. the
+                // LLM settings dialog handles "/llm"), not unknown.
+                _logger.LogDebug("Delegating command: {commandName}", command);
                 OnCommand?.Invoke(command);
-                _logger.LogDebug("Unknown command: {commandName}", command);
                 break;
         }
     }
