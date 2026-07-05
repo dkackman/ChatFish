@@ -92,7 +92,14 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
         Debug.Assert(_dotNetRef is null);
         _dotNetRef = DotNetObjectReference.Create(this);
         AvailableModels = await _JSRuntime.InvokeAsync<List<string>>("getAvailableModels");
-        SelectedModel = await _JSRuntime.InvokeAsync<string>("localStorage.getItem", "selectedModel");
+
+        // localStorage returns null on first visit; only restore a previously saved
+        // model so we don't log a spurious "Invalid model selected" warning.
+        var savedModel = await _JSRuntime.InvokeAsync<string?>("localStorage.getItem", "selectedModel");
+        if (!string.IsNullOrEmpty(savedModel))
+        {
+            SelectedModel = savedModel;
+        }
     }
 
     public async Task InitializeWebLLMEngine()

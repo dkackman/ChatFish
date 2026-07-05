@@ -19,47 +19,6 @@
             style="transform: scale(@State.Scale)" />
     </div>
 </div>
-<style>
-    .fish-container {
-        position: absolute;
-        display: flex;
-        align-items: center;
-        flex-direction: column;
-        animation: float 4s infinite ease-in-out;
-    }
-
-    .fish-img {
-        z-index: 1;
-    }
-
-    .fish-img.right {
-        align-self: flex-start;
-    }
-
-    .fish-img.left {
-        align-self: flex-end;
-    }
-
-    .fish-wrapper {
-        transition: transform 1s ease-in-out;
-    }
-
-    .fish-wrapper.right {
-        transform: translateX(0);
-    }
-
-    .fish-wrapper.left {
-        transform: translateX(0);
-    }
-
-    @* .fish-wrapper.right.message-visible {
-        transform: translateX(-50px);
-    }
-
-    .fish-wrapper.left.message-visible {
-        transform: translateX(50px);
-    } *@    
-</style>
 @code {
     [Parameter]
     public FishState State { get; set; } = new();
