@@ -82,4 +82,104 @@ public class FishAnimationTests
         Assert.Equal(456, animation.Position.Top);
         Assert.NotEqual(originalDirection, animation.Velocity.Direction);
     }
+
+    [Fact]
+    public void SetBubble_IgnoresZeroSizedMeasurements()
+    {
+        var animation = new FishAnimation();
+
+        animation.SetBubble(new Size(0, 0));
+        Assert.False(animation.HasMessage);
+
+        animation.SetBubble(new Size(120, 200));
+        Assert.True(animation.HasMessage);
+        Assert.Equal(120, animation.BubbleSize.Height);
+        Assert.Equal(200, animation.BubbleSize.Width);
+
+        animation.ClearBubble();
+        Assert.False(animation.HasMessage);
+    }
+
+    [Fact]
+    public void IncrementPosition_PlacesBubbleBelow_WhenNoRoomAbove()
+    {
+        var tank = Tank(800, 600);
+        var animation = new FishAnimation();
+        animation.InitializePosition(tank);
+        animation.SetSize(new Size(50, 50));
+        animation.SetBubble(new Size(150, 200)); // bubble is 150 tall
+
+        // Park the fish hard against the top edge: no room for a 150px bubble above it.
+        animation.MoveFish(new Point(400, 0));
+        animation.IncrementPosition(tank);
+
+        Assert.Equal(BubbleVerticalSide.Below, animation.BubbleSide);
+    }
+
+    [Fact]
+    public void IncrementPosition_PlacesBubbleAbove_WhenRoomExists()
+    {
+        var tank = Tank(800, 600);
+        var animation = new FishAnimation();
+        animation.InitializePosition(tank);
+        animation.SetSize(new Size(50, 50));
+        animation.SetBubble(new Size(150, 200));
+
+        // Plenty of room above the fish.
+        animation.MoveFish(new Point(400, 400));
+        animation.IncrementPosition(tank);
+
+        Assert.Equal(BubbleVerticalSide.Above, animation.BubbleSide);
+    }
+
+    [Fact]
+    public void IncrementPosition_KeepsTalkingFishAndBubbleWithinTank()
+    {
+        const double fish = 50;
+        const double bubbleWidth = 200;
+        var tank = Tank(800, 600);
+        var animation = new FishAnimation();
+        animation.InitializePosition(tank);
+        animation.SetSize(new Size(fish, fish));
+        animation.SetBubble(new Size(120, bubbleWidth));
+
+        const double tolerance = 10; // > max per-step speed (~3.5)
+        for (var tick = 0; tick < 5000; tick++)
+        {
+            animation.IncrementPosition(tank);
+
+            // The bubble sits ahead of the fish's facing direction, from the fish
+            // centre outward. Verify that whole talking ensemble stays on screen.
+            var centerX = animation.Position.Left + fish / 2;
+            double leftExtent, rightExtent;
+            if (animation.Velocity.Direction == Direction.Right)
+            {
+                leftExtent = animation.Position.Left;
+                rightExtent = centerX + bubbleWidth;
+            }
+            else
+            {
+                leftExtent = centerX - bubbleWidth;
+                rightExtent = animation.Position.Left + fish;
+            }
+
+            Assert.InRange(leftExtent, -tolerance, tank.Width);
+            Assert.InRange(rightExtent, 0, tank.Width + tolerance);
+        }
+    }
+
+    [Fact]
+    public void IncrementPosition_LeavesBubbleBoundsEmpty_WhenNotTalking()
+    {
+        var tank = Tank(800, 600);
+        var animation = new FishAnimation();
+        animation.InitializePosition(tank);
+        animation.SetSize(new Size(50, 50));
+
+        animation.IncrementPosition(tank);
+
+        Assert.False(animation.HasMessage);
+        Assert.Equal(0, animation.BubbleBounds.Width);
+        Assert.Equal(0, animation.BubbleBounds.Height);
+    }
 }
