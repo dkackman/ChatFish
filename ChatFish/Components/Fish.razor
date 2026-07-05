@@ -135,9 +135,19 @@
     {
         if (_fishAnimation.Enabled && !_disposed)
         {
-            var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
+            // Measure the fish once (after its image has loaded) and cache the size, so
+            // subsequent ticks run entirely in C# with no per-fish interop round-trip.
+            if (!_fishAnimation.HasSize)
+            {
+                var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
+                _fishAnimation.SetSize(new Size(fishRect.Height, fishRect.Width));
+                if (_disposed)
+                {
+                    return;
+                }
+            }
 
-            _fishAnimation.IncrementPosition(tankRect, fishRect);
+            _fishAnimation.IncrementPosition(tankRect);
 
             if (!_disposed)
             {

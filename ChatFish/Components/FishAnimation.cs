@@ -7,6 +7,19 @@ public class FishAnimation()
     public Velocity Velocity { get; private set; } = new();
     public bool Enabled { get; set; } = true;
 
+    // The fish size is measured from the DOM once (after its image has loaded) and
+    // cached, so the animation loop no longer needs a per-tick interop round-trip.
+    public bool HasSize { get; private set; }
+
+    public void SetSize(Size size)
+    {
+        if (size.Width > 0 && size.Height > 0)
+        {
+            Size = size;
+            HasSize = true;
+        }
+    }
+
     public void InitializePosition(ClientRect tankRect)
     {
         // the 50 is buffer to keep the fish from being placed too close to the edge
@@ -24,14 +37,13 @@ public class FishAnimation()
         Velocity = GetRandomVelocity(Velocity.OtherDirection().Direction);
     }
 
-    // this is called on the animation loop
-    public void IncrementPosition(ClientRect tank, ClientRect fish)
+    // this is called on the animation loop; the whole simulation runs in C# using
+    // the fish's cached size and its tank-relative Position (no per-tick interop).
+    public void IncrementPosition(ClientRect tank)
     {
         var nextVelocity = GetNextVelocity();
-        var currentPosition = new Point(fish.Left, fish.Top);
-        var nextPosition = currentPosition + Velocity;
+        var nextPosition = Position + Velocity;
 
-        Size = new Size(fish.Height, fish.Width);
         Velocity = AdjustVelocityForBoundaries(nextVelocity, Size, nextPosition, tank);
         Position += Velocity;
     }
@@ -55,22 +67,23 @@ public class FishAnimation()
 
     private static Velocity AdjustVelocityForBoundaries(Velocity currentVelocity, Size size, Point nextPosition, ClientRect tankRect)
     {
+        // Position is tank-relative, so the tank spans (0, 0) to (Width, Height).
         // check the y bounds
-        if (nextPosition.Top <= tankRect.Top)
+        if (nextPosition.Top <= 0)
         {
             currentVelocity = new Velocity(currentVelocity.Dx, Math.Abs(currentVelocity.Dy));
         }
-        else if (nextPosition.Top + size.Height >= tankRect.Bottom)
+        else if (nextPosition.Top + size.Height >= tankRect.Height)
         {
             currentVelocity = new Velocity(currentVelocity.Dx, -Math.Abs(currentVelocity.Dy));
         }
 
         // check the x bounds
-        if (nextPosition.Left <= tankRect.Left)
+        if (nextPosition.Left <= 0)
         {
             currentVelocity = new Velocity(Math.Abs(currentVelocity.Dx), currentVelocity.Dy);
         }
-        else if (nextPosition.Left + size.Width >= tankRect.Right)
+        else if (nextPosition.Left + size.Width >= tankRect.Width)
         {
             currentVelocity = new Velocity(-Math.Abs(currentVelocity.Dx), currentVelocity.Dy);
         }

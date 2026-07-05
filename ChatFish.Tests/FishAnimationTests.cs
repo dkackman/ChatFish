@@ -16,16 +16,6 @@ public class FishAnimationTests
         Height = height,
     };
 
-    private static ClientRect FishAt(Point position, double size) => new()
-    {
-        Left = position.Left,
-        Top = position.Top,
-        Right = position.Left + size,
-        Bottom = position.Top + size,
-        Width = size,
-        Height = size,
-    };
-
     [Fact]
     public void InitializePosition_PlacesFishInsideTank()
     {
@@ -49,18 +39,33 @@ public class FishAnimationTests
         var tank = Tank(800, 600);
         var animation = new FishAnimation();
         animation.InitializePosition(tank);
+        animation.SetSize(new Size(size, size)); // measured once from the DOM in the real app
 
-        // Simulate the animation loop, feeding the fish's own position back in as its
-        // DOM rect. The boundary logic should keep it from escaping the tank; a small
-        // tolerance covers the single step it may take before a bounce reverses it.
+        // Run the (tank-relative) simulation many ticks. The boundary logic should keep
+        // the fish inside the tank; a small tolerance covers the single step it may take
+        // before a bounce reverses it.
         const double tolerance = 10; // > max per-step speed (~3.5)
         for (var tick = 0; tick < 5000; tick++)
         {
-            animation.IncrementPosition(tank, FishAt(animation.Position, size));
+            animation.IncrementPosition(tank);
 
-            Assert.InRange(animation.Position.Left, -tolerance, tank.Right + tolerance);
-            Assert.InRange(animation.Position.Top, -tolerance, tank.Bottom - size + tolerance);
+            Assert.InRange(animation.Position.Left, -tolerance, tank.Width - size + tolerance);
+            Assert.InRange(animation.Position.Top, -tolerance, tank.Height - size + tolerance);
         }
+    }
+
+    [Fact]
+    public void SetSize_IgnoresZeroSizedMeasurements()
+    {
+        var animation = new FishAnimation();
+
+        animation.SetSize(new Size(0, 0)); // image not loaded yet
+        Assert.False(animation.HasSize);
+
+        animation.SetSize(new Size(48, 64)); // real measurement
+        Assert.True(animation.HasSize);
+        Assert.Equal(48, animation.Size.Height);
+        Assert.Equal(64, animation.Size.Width);
     }
 
     [Fact]
