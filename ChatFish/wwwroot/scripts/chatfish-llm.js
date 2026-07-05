@@ -31,14 +31,20 @@ async function generating(messages, onUpdate, onFinish, onError) {
   try {
     const chunks = await window.engine.chat.completions.create({
       messages: messages,
-      temperature: 0.5,
-      top_p: 1,
+      // Omit temperature so each model's own tuned mlc-chat-config default applies
+      // (e.g. DeepSeek-R1 distills vs. plain instruct models want different values).
+      top_p: 0.95,
+      repetition_penalty: 1.1,
+      // Hard backstop: a reasoning model that never emits a closing </think> can
+      // otherwise generate forever, since the watchdogs below only catch a stall
+      // in token *rate*, not an unbounded total length.
+      max_tokens: 4096,
       stream: true,
     });
 
     armWatchdog(
       FIRST_TOKEN_TIMEOUT_MS,
-      "The model did not start responding. It may be stuck — try again."
+      "The model did not start responding. It may be stuck — try again.",
     );
 
     let reply = "";
@@ -52,7 +58,7 @@ async function generating(messages, onUpdate, onFinish, onError) {
         reply += delta;
         armWatchdog(
           INTER_TOKEN_TIMEOUT_MS,
-          "The model stopped responding partway through — try again."
+          "The model stopped responding partway through — try again.",
         );
         const now = performance.now();
         if (now - lastFlush > UPDATE_THROTTLE_MS) {
@@ -86,8 +92,8 @@ window.getDownloadedModels = async () => {
   const ids = webllm.prebuiltAppConfig.model_list.map((m) => m.model_id);
   const cached = await Promise.all(
     ids.map(async (id) =>
-      (await webllm.hasModelInCache(id, webllm.prebuiltAppConfig)) ? id : null
-    )
+      (await webllm.hasModelInCache(id, webllm.prebuiltAppConfig)) ? id : null,
+    ),
   );
   return cached.filter((id) => id !== null);
 };
@@ -104,20 +110,20 @@ window.initializeWebLLMEngine = async (selectedModel, dotNetHelper) => {
       dotNetHelper.invokeMethodAsync(
         "UpdateEngineInitProgress",
         report.text,
-        report.progress
+        report.progress,
       );
     };
     try {
       window.engine = await webllm.CreateWebWorkerMLCEngine(
         new Worker(new URL("./worker.js", import.meta.url), { type: "module" }),
         selectedModel,
-        { initProgressCallback: initProgressCallback }
+        { initProgressCallback: initProgressCallback },
       );
       window.loadedModel = selectedModel;
     } catch (error) {
       dotNetHelper.invokeMethodAsync(
         "OnMessageError",
-        "There was an error downloading this model. \n\n" + error.toString()
+        "There was an error downloading this model. \n\n" + error.toString(),
       );
       return null;
     }
