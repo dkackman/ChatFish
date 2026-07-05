@@ -50,7 +50,7 @@
 }
 
 /* Vertical anchoring: above the fish when there is room, below otherwise.
-   The vertical side is chosen in FishAnimation.ComputeBubbleRect. */
+   The vertical side is chosen in FishAnimation.ComputeBubbleSide. */
 .message-bubble.above {
     bottom: 100%;
 }
@@ -111,6 +111,20 @@
     left: 40%;
     top: 110%;
     transform: translateX(-50%);
+}
+
+/* When the bubble sits below the fish, the trailing bubbles rise from the top
+   of the bubble back toward the fish's head instead of trailing off the bottom. */
+.message-bubble.below.left::before,
+.message-bubble.below.right::before {
+    top: auto;
+    bottom: 105%;
+}
+
+.message-bubble.below.left::after,
+.message-bubble.below.right::after {
+    top: auto;
+    bottom: 110%;
 }
 
 @keyframes floatLeft {
