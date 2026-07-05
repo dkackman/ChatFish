@@ -11,6 +11,13 @@ public class FishAnimation()
     // cached, so the animation loop no longer needs a per-tick interop round-trip.
     public bool HasSize { get; private set; }
 
+    // Bubble state. The bubble is measured once per message (its size changes with the
+    // text) and fed in via SetBubble; the simulation then keeps the whole talking
+    // ensemble on screen and reports where the bubble should be drawn.
+    public bool HasMessage { get; private set; }
+    public Size BubbleSize { get; private set; }
+    public BubbleVerticalSide BubbleSide { get; private set; } = BubbleVerticalSide.Above;
+
     public void SetSize(Size size)
     {
         if (size.Width > 0 && size.Height > 0)
@@ -18,6 +25,23 @@ public class FishAnimation()
             Size = size;
             HasSize = true;
         }
+    }
+
+    // Called when a message becomes visible; size is measured from the rendered bubble.
+    public void SetBubble(Size size)
+    {
+        if (size.Width > 0 && size.Height > 0)
+        {
+            BubbleSize = size;
+            HasMessage = true;
+        }
+    }
+
+    // Called when the message is hidden; the fish goes back to plain fish-box physics.
+    public void ClearBubble()
+    {
+        HasMessage = false;
+        BubbleSize = default;
     }
 
     public void InitializePosition(ClientRect tankRect)
@@ -46,6 +70,11 @@ public class FishAnimation()
 
         Velocity = AdjustVelocityForBoundaries(nextVelocity, Size, nextPosition, tank);
         Position += Velocity;
+
+        if (HasMessage)
+        {
+            BubbleSide = ComputeBubbleSide(Position);
+        }
     }
 
     private static Velocity GetRandomVelocity(Direction direction)
@@ -65,10 +94,11 @@ public class FishAnimation()
         return changeSpeed || changeDirection ? GetRandomVelocity(newDirectionVelocity.Direction) : newDirectionVelocity;
     }
 
-    private static Velocity AdjustVelocityForBoundaries(Velocity currentVelocity, Size size, Point nextPosition, ClientRect tankRect)
+    private Velocity AdjustVelocityForBoundaries(Velocity currentVelocity, Size size, Point nextPosition, ClientRect tankRect)
     {
         // Position is tank-relative, so the tank spans (0, 0) to (Width, Height).
-        // check the y bounds
+        // Vertical bounds use the fish box only; the bubble avoids vertical clipping
+        // by flipping above/below (see ComputeBubbleSide).
         if (nextPosition.Top <= 0)
         {
             currentVelocity = new Velocity(currentVelocity.Dx, Math.Abs(currentVelocity.Dy));
@@ -78,16 +108,43 @@ public class FishAnimation()
             currentVelocity = new Velocity(currentVelocity.Dx, -Math.Abs(currentVelocity.Dy));
         }
 
-        // check the x bounds
-        if (nextPosition.Left <= 0)
+        // Horizontal bounds: while talking, include the bubble that sits ahead of the
+        // fish so the fish turns around before the bubble reaches a side wall.
+        var (leftExtent, rightExtent) = HorizontalExtent(nextPosition, size, currentVelocity.Direction);
+        if (leftExtent <= 0)
         {
             currentVelocity = new Velocity(Math.Abs(currentVelocity.Dx), currentVelocity.Dy);
         }
-        else if (nextPosition.Left + size.Width >= tankRect.Width)
+        else if (rightExtent >= tankRect.Width)
         {
             currentVelocity = new Velocity(-Math.Abs(currentVelocity.Dx), currentVelocity.Dy);
         }
 
         return currentVelocity;
+    }
+
+    // The horizontal span the fish occupies. While talking this includes the bubble,
+    // which extends from the fish centre outward in the facing direction.
+    private (double Left, double Right) HorizontalExtent(Point position, Size size, Direction direction)
+    {
+        var fishLeft = position.Left;
+        var fishRight = position.Left + size.Width;
+        if (!HasMessage)
+        {
+            return (fishLeft, fishRight);
+        }
+
+        var centerX = position.Left + size.Width / 2.0;
+        return direction == Direction.Right
+            ? (fishLeft, centerX + BubbleSize.Width)
+            : (centerX - BubbleSize.Width, fishRight);
+    }
+
+    // Which vertical side to draw the bubble on: above the fish when there is room, else below.
+    // Horizontal placement (ahead of the facing direction) is handled in CSS, and horizontal
+    // on-screen safety is enforced in AdjustVelocityForBoundaries — not here.
+    private BubbleVerticalSide ComputeBubbleSide(Point position)
+    {
+        return position.Top - BubbleSize.Height < 0 ? BubbleVerticalSide.Below : BubbleVerticalSide.Above;
     }
 }

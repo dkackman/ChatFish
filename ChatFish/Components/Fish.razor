@@ -11,7 +11,7 @@
 <div @ref="fishElement" class="fish-container"
     style="left: @(Css(_fishAnimation.Position.Left))px; top: @(Css(_fishAnimation.Position.Top))px;">
     <MessageBubble Message="@State.CurrentMessage" IsVisible="@State.IsMessageVisible"
-        FishDirection="@_fishAnimation.Velocity.Direction" />
+        FishDirection="@_fishAnimation.Velocity.Direction" VerticalSide="@_fishAnimation.BubbleSide" />
     <div
         class="fish-wrapper @(_fishAnimation.Velocity.Direction.ToString().ToLower()) @(State.IsMessageVisible ? "message-visible" : "")">
         <img class="fish-img" src="@FishImagePath" alt="@($"{State.Color} fish")"
@@ -32,6 +32,7 @@
     private ElementReference fishElement;
     private readonly FishAnimation _fishAnimation = new();
     private bool _disposed;
+    private bool _pendingBubbleMeasure;
 
     // Format doubles for CSS with the invariant culture so a decimal comma
     // (e.g. under de-DE) never produces invalid values like "left: 12,5px".
@@ -68,10 +69,26 @@
                 State.MessageChanged += MessageChanged;
             }
         }
+
+        if (!firstRender && _pendingBubbleMeasure && !_disposed)
+        {
+            _pendingBubbleMeasure = false;
+            var bubbleRect = await JSRuntime.InvokeAsync<ClientRect>("getBubbleRect", fishElement);
+            _fishAnimation.SetBubble(new Size(bubbleRect.Height, bubbleRect.Width));
+        }
     }
 
     private void MessageChanged()
     {
+        if (State is { IsMessageVisible: true })
+        {
+            _pendingBubbleMeasure = true;
+        }
+        else
+        {
+            _fishAnimation.ClearBubble();
+        }
+
         StateHasChanged();
     }
 

@@ -18,6 +18,13 @@ window.getElementRect = (element) => {
   return element.getBoundingClientRect();
 };
 
+window.getBubbleRect = (fishElement) => {
+  if (!fishElement) return null;
+  const bubble = fishElement.querySelector(".message-bubble");
+  if (!bubble) return null;
+  return bubble.getBoundingClientRect();
+};
+
 window.makeDraggable = (element, dotNetRef) => {
   let pos1 = 0,
     pos2 = 0,

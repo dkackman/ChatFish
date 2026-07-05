@@ -1,8 +1,9 @@
 @using Ganss.Xss
+@using ChatFish.Components
 @using ChatFish.State
 @inject HtmlSanitizer Sanitizer
 
-<div class="message-bubble @(IsVisible ? "visible" : "hidden") @Sanitizer.Sanitize(Message.Modifier) @FishDirection.ToString().ToLower()"
+<div class="message-bubble @(IsVisible ? "visible" : "hidden") @Sanitizer.Sanitize(Message.Modifier) @FishDirection.ToString().ToLower() @VerticalSide.ToString().ToLower()"
     role="status" aria-live="polite">
     @(Sanitizer.Sanitize(Message.Message))
 </div>
@@ -11,4 +12,5 @@
     [Parameter] public ChatMessage Message { get; set; } = new();
     [Parameter] public bool IsVisible { get; set; }
     [Parameter] public Direction FishDirection { get; set; }
+    [Parameter] public BubbleVerticalSide VerticalSide { get; set; } = BubbleVerticalSide.Above;
 }
