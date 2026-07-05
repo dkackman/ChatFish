@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.JSInterop;
+using ChatFish.State;
 
 namespace ChatFish.Services;
 
@@ -26,6 +27,10 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
     public IReadOnlyCollection<string> DownloadedModels { get; private set; } = [];
 
     public bool IsModelDownloaded(string modelId) => DownloadedModels.Contains(modelId);
+
+    // The model currently loaded in the web-llm engine, or null if none. Reflects
+    // in-memory engine state, so it's distinct from whether a model is downloaded.
+    public string? LoadedModel { get; private set; }
 
     public async Task RefreshDownloadedModels()
     {
@@ -86,9 +91,13 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
     [JSInvokable]
     public void OnMessageFinish(string finalMessage)
     {
+        // Persist only the answer in history. A reasoning model's <think> chain-
+        // of-thought must not be replayed into later turns: it bloats the context
+        // window and these models are trained to condition on prior answers only.
+        var answer = ReasoningParser.Parse(finalMessage).Answer;
         var chatMessage = new LLMessage
         {
-            Content = finalMessage,
+            Content = answer,
             Role = "assistant",
         };
         _transcript.Add(chatMessage);
@@ -125,8 +134,9 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
         try
         {
             await _JSRuntime.InvokeVoidAsync("resetLLMEngine", _dotNetRef);
+            LoadedModel = null;
             UpdateEngineInitProgress("Initializing WebLLM engine...", 0);
-            await _JSRuntime.InvokeVoidAsync("initializeWebLLMEngine", SelectedModel, _dotNetRef);
+            LoadedModel = await _JSRuntime.InvokeAsync<string?>("initializeWebLLMEngine", SelectedModel, _dotNetRef);
         }
         catch (JSException ex)
         {

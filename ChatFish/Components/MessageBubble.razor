@@ -5,7 +5,26 @@
 
 <div class="message-bubble @(IsVisible ? "visible" : "hidden") @Sanitizer.Sanitize(Message.Modifier) @FishDirection.ToString().ToLower() @VerticalSide.ToString().ToLower()"
     role="status" aria-live="polite">
-    @(Sanitizer.Sanitize(Message.Message))
+    @if (Message.IsThinking)
+    {
+        <span class="thinking-dots" aria-label="thinking">
+            <span></span><span></span><span></span>
+        </span>
+        @if (!string.IsNullOrEmpty(Message.Reasoning))
+        {
+            @* Decorative "watch the fish think" peek; aria-hidden so its rapid
+               updates don't flood screen readers. Rendered as plain text — Blazor
+               HTML-encodes it, which is safe without the sanitizer. *@
+            <div class="thinking-reasoning" aria-hidden="true">@Message.Reasoning</div>
+        }
+    }
+    else
+    {
+        @* Blazor HTML-encodes interpolated strings, so untrusted model/user text
+           is rendered safely as literal text without the HtmlSanitizer (which
+           would silently drop content such as <think> tags or "a < b"). *@
+        @Message.Message
+    }
 </div>
 
 @code {

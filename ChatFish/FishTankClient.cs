@@ -23,7 +23,9 @@ public class FishTankClient(LLMService llmService, ILogger<FishTankClient> logge
             ["ai"] = new FishState { Id = "ai", Color = FishColor.Orange, Scale = "1.0" },
             [ClientConnectionId] = new FishState { Id = ClientConnectionId, Color = FishColor.Blue, Scale = "0.9" },
         };
+        _llmService.MessageUpdate += OnMessageStreaming;
         _llmService.MessageFinish += OnMessageReceived;
+        _llmService.MessageError += OnMessageError;
 
         OnStateChanged?.Invoke();
     }
@@ -31,6 +33,9 @@ public class FishTankClient(LLMService llmService, ILogger<FishTankClient> logge
     public async Task SendMessageAsync(ChatMessage message)
     {
         DisplayMessageForFish(ClientConnectionId, message);
+        // Show the animated "thinking" bubble immediately; it stays until the
+        // first streamed token replaces it (or an error clears it).
+        DisplayMessageForFish("ai", ChatMessage.Thinking());
         try
         {
             await _llmService.SendMessage(message.Message);
@@ -42,7 +47,35 @@ public class FishTankClient(LLMService llmService, ILogger<FishTankClient> logge
         }
     }
 
-    private void OnMessageReceived(string message) => DisplayMessageForFish("ai", ChatMessage.FromMessage(message));
+    // Partial reply streamed token-by-token. Reasoning models stream a
+    // <think>...</think> chain-of-thought before the answer; while that is still
+    // arriving we keep the animated thinking bubble and let its peek follow the
+    // live reasoning, only switching to the answer once real answer text appears.
+    private void OnMessageStreaming(string partial)
+    {
+        var parsed = ReasoningParser.Parse(partial);
+        if (parsed.IsReasoning)
+        {
+            DisplayMessageForFish("ai", ChatMessage.Thinking(ReasoningParser.Peek(parsed.Reasoning)));
+        }
+        else if (!string.IsNullOrWhiteSpace(parsed.Answer))
+        {
+            DisplayMessageForFish("ai", ChatMessage.FromReply(parsed.Answer));
+        }
+        // else: answer hasn't started yet (e.g. just past </think>) — leave the
+        // thinking bubble in place rather than flashing it blank.
+    }
+
+    // Final reply. Show only the answer (reasoning was transient), and fall back
+    // to a note if the model returned nothing so the turn doesn't silently vanish.
+    private void OnMessageReceived(string message)
+    {
+        var answer = ReasoningParser.Parse(message).Answer;
+        DisplayMessageForFish("ai", ChatMessage.FromReply(
+            string.IsNullOrWhiteSpace(answer) ? "🫧 (I didn't have anything to say — try again?)" : answer));
+    }
+
+    private void OnMessageError(string error) => DisplayMessageForFish("ai", ChatMessage.FromReply(error));
 
     private void DisplayMessageForFish(string fishId, ChatMessage message)
     {
@@ -54,5 +87,10 @@ public class FishTankClient(LLMService llmService, ILogger<FishTankClient> logge
         }
     }
 
-    public void Dispose() => _llmService.MessageFinish -= OnMessageReceived;
+    public void Dispose()
+    {
+        _llmService.MessageUpdate -= OnMessageStreaming;
+        _llmService.MessageFinish -= OnMessageReceived;
+        _llmService.MessageError -= OnMessageError;
+    }
 }

@@ -23,6 +23,12 @@
     margin-top: 10px;
 }
 
+.model-status {
+    margin: 0 0 10px;
+    font-size: 0.85em;
+    opacity: 0.85;
+}
+
 .hidden {
     display: none;
 }

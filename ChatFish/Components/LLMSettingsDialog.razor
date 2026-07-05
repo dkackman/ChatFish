@@ -27,8 +27,20 @@
                         }
                     </select>
                     <button id="download" @onclick="InitializeWebLLMEngine" type="button"
-                        aria-label="Download selected model">Download</button>
+                        aria-label="@(LLMService.IsModelDownloaded(LLMService.SelectedModel) ? "Load selected model" : "Download selected model")">
+                        @(LLMService.IsModelDownloaded(LLMService.SelectedModel) ? "Load" : "Download")
+                    </button>
                 </div>
+                <p class="model-status" aria-live="polite">
+                    @if (string.IsNullOrEmpty(LLMService.LoadedModel))
+                    {
+                        <span>No model loaded</span>
+                    }
+                    else
+                    {
+                        <span>Loaded: <strong>@LLMService.LoadedModel</strong></span>
+                    }
+                </p>
                 <div class="@(isDownloadStatusVisible ? "" : "hidden")">
                     <label for="download-progress" class="visually-hidden">Download progress</label>
                     <progress id="download-progress" value="@progressValue" max="100" class="w-100 mb-2" aria-valuemin="0"
