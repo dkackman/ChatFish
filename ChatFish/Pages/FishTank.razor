@@ -23,7 +23,7 @@
 
     <ChatInput />
 </div>
-<LLMSettingsDialog IsVisible="@IsSettingsDialogVisible" Position="TopLeft" />
+<LLMSettingsDialog IsVisible="@IsSettingsDialogVisible" Position="TopLeft" OnClose="@CloseSettingsDialog" />
 <FloatingToast IsVisible="@FishTankClient.IsOfflineMode" Position="BottomRight" ShowCloseButton="false"
     ToastMessage="@(new Toast(){Title ="You are offline", Caption="Functionality will be limited."})" />
 <FloatingToast IsVisible="@(_toastMessage != null)" Position="TopRight" OnClose="@CloseToast"
@@ -78,6 +78,12 @@
             default:
                 break;
         }
+        StateHasChanged();
+    }
+
+    private void CloseSettingsDialog()
+    {
+        IsSettingsDialogVisible = false;
         StateHasChanged();
     }
 
