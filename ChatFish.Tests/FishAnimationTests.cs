@@ -169,7 +169,7 @@ public class FishAnimationTests
     }
 
     [Fact]
-    public void IncrementPosition_LeavesBubbleBoundsEmpty_WhenNotTalking()
+    public void IncrementPosition_LeavesBubbleSideDefault_WhenNotTalking()
     {
         var tank = Tank(800, 600);
         var animation = new FishAnimation();
@@ -179,7 +179,6 @@ public class FishAnimationTests
         animation.IncrementPosition(tank);
 
         Assert.False(animation.HasMessage);
-        Assert.Equal(0, animation.BubbleBounds.Width);
-        Assert.Equal(0, animation.BubbleBounds.Height);
+        Assert.Equal(BubbleVerticalSide.Above, animation.BubbleSide);
     }
 }

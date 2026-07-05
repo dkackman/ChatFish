@@ -17,7 +17,6 @@ public class FishAnimation()
     public bool HasMessage { get; private set; }
     public Size BubbleSize { get; private set; }
     public BubbleVerticalSide BubbleSide { get; private set; } = BubbleVerticalSide.Above;
-    public ClientRect BubbleBounds { get; private set; }
 
     public void SetSize(Size size)
     {
@@ -43,7 +42,6 @@ public class FishAnimation()
     {
         HasMessage = false;
         BubbleSize = default;
-        BubbleBounds = default;
     }
 
     public void InitializePosition(ClientRect tankRect)
@@ -73,7 +71,10 @@ public class FishAnimation()
         Velocity = AdjustVelocityForBoundaries(nextVelocity, Size, nextPosition, tank);
         Position += Velocity;
 
-        BubbleBounds = HasMessage ? ComputeBubbleRect(Position, tank) : default;
+        if (HasMessage)
+        {
+            BubbleSide = ComputeBubbleSide(Position);
+        }
     }
 
     private static Velocity GetRandomVelocity(Direction direction)
@@ -97,7 +98,7 @@ public class FishAnimation()
     {
         // Position is tank-relative, so the tank spans (0, 0) to (Width, Height).
         // Vertical bounds use the fish box only; the bubble avoids vertical clipping
-        // by flipping above/below (see ComputeBubbleRect).
+        // by flipping above/below (see ComputeBubbleSide).
         if (nextPosition.Top <= 0)
         {
             currentVelocity = new Velocity(currentVelocity.Dx, Math.Abs(currentVelocity.Dy));
@@ -139,35 +140,11 @@ public class FishAnimation()
             : (centerX - BubbleSize.Width, fishRight);
     }
 
-    // Where to draw the bubble: ahead of the fish's facing direction, above the fish if
-    // there is room and below otherwise, clamped so it stays inside the tank.
-    private ClientRect ComputeBubbleRect(Point position, ClientRect tank)
+    // Which vertical side to draw the bubble on: above the fish when there is room, else below.
+    // Horizontal placement (ahead of the facing direction) is handled in CSS, and horizontal
+    // on-screen safety is enforced in AdjustVelocityForBoundaries — not here.
+    private BubbleVerticalSide ComputeBubbleSide(Point position)
     {
-        var top = position.Top - BubbleSize.Height;
-        if (top < 0)
-        {
-            BubbleSide = BubbleVerticalSide.Below;
-            top = position.Top + Size.Height;
-        }
-        else
-        {
-            BubbleSide = BubbleVerticalSide.Above;
-        }
-
-        var centerX = position.Left + Size.Width / 2.0;
-        var left = Velocity.Direction == Direction.Right ? centerX : centerX - BubbleSize.Width;
-        left = Math.Clamp(left, 0, Math.Max(0, tank.Width - BubbleSize.Width));
-
-        return new ClientRect
-        {
-            X = left,
-            Y = top,
-            Left = left,
-            Top = top,
-            Width = BubbleSize.Width,
-            Height = BubbleSize.Height,
-            Right = left + BubbleSize.Width,
-            Bottom = top + BubbleSize.Height,
-        };
+        return position.Top - BubbleSize.Height < 0 ? BubbleVerticalSide.Below : BubbleVerticalSide.Above;
     }
 }
