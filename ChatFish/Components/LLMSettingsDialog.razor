@@ -23,7 +23,7 @@
                     <select id="model-selection" @bind="LLMService.SelectedModel" aria-label="Select LLM Model">
                         @foreach (var model in LLMService.AvailableModels)
                         {
-                            <option value="@model">@model</option>
+                            <option value="@model">@model@(LLMService.IsModelDownloaded(model) ? " (downloaded)" : "")</option>
                         }
                     </select>
                     <button id="download" @onclick="InitializeWebLLMEngine" type="button"
@@ -69,6 +69,8 @@
         try
         {
             await LLMService.InitializeWebLLMEngine();
+            // The model is now cached; refresh so the dropdown shows its ✓ marker.
+            await LLMService.RefreshDownloadedModels();
         }
         catch (Exception ex)
         {

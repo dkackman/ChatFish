@@ -26,9 +26,11 @@
 
     private async Task SendMessage()
     {
-        await MessageDispatcher.DispatchMessageAsync(Sanitizer.Sanitize(chatMessage));
+        // Clear the input up front so it empties as the user's fish bubble appears,
+        // not after the model finishes responding (the dispatch awaits generation).
+        var message = Sanitizer.Sanitize(chatMessage);
         chatMessage = "";
-        StateHasChanged();
+        await MessageDispatcher.DispatchMessageAsync(message);
     }
 
     private async Task HandleKeyPress(KeyboardEventArgs e)

@@ -21,6 +21,18 @@ window.getAvailableModels = () => {
   return webllm.prebuiltAppConfig.model_list.map((m) => m.model_id);
 };
 
+// Returns the ids of models whose weights are already cached locally. web-llm
+// tracks this in the browser Cache Storage, so we don't keep a parallel list.
+window.getDownloadedModels = async () => {
+  const ids = webllm.prebuiltAppConfig.model_list.map((m) => m.model_id);
+  const cached = await Promise.all(
+    ids.map(async (id) =>
+      (await webllm.hasModelInCache(id, webllm.prebuiltAppConfig)) ? id : null
+    )
+  );
+  return cached.filter((id) => id !== null);
+};
+
 window.resetLLMEngine = () => {
   window.engine = undefined;
 };

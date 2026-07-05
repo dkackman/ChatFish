@@ -21,6 +21,24 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
     public const string DefaultModel = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
     public IEnumerable<string> AvailableModels { get; private set; } = [DefaultModel];
 
+    // Ids of models already cached locally by web-llm. Refreshed from the browser
+    // cache rather than tracked separately so it can't drift out of sync.
+    public IReadOnlyCollection<string> DownloadedModels { get; private set; } = [];
+
+    public bool IsModelDownloaded(string modelId) => DownloadedModels.Contains(modelId);
+
+    public async Task RefreshDownloadedModels()
+    {
+        try
+        {
+            DownloadedModels = await _JSRuntime.InvokeAsync<List<string>>("getDownloadedModels");
+        }
+        catch (JSException ex)
+        {
+            _logger.LogWarning(ex, "Failed to query downloaded models.");
+        }
+    }
+
     public string SelectedModel
     {
         get => _selectedModel;
@@ -89,6 +107,7 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
         Debug.Assert(_dotNetRef is null);
         _dotNetRef = DotNetObjectReference.Create(this);
         AvailableModels = await _JSRuntime.InvokeAsync<List<string>>("getAvailableModels");
+        await RefreshDownloadedModels();
 
         // localStorage returns null on first visit; only restore a previously saved
         // model so we don't log a spurious "Invalid model selected" warning.
