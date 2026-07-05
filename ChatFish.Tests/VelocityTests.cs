@@ -5,16 +5,10 @@ namespace ChatFish.Tests;
 public class VelocityTests
 {
     [Fact]
-    public void PositiveDx_FacesRight()
-    {
-        Assert.Equal(Direction.Right, new Velocity(1.5, 0).Direction);
-    }
+    public void PositiveDx_FacesRight() => Assert.Equal(Direction.Right, new Velocity(1.5, 0).Direction);
 
     [Fact]
-    public void NegativeDx_FacesLeft()
-    {
-        Assert.Equal(Direction.Left, new Velocity(-1.5, 0).Direction);
-    }
+    public void NegativeDx_FacesLeft() => Assert.Equal(Direction.Left, new Velocity(-1.5, 0).Direction);
 
     [Fact]
     public void OtherDirection_FlipsHorizontalKeepsVertical()

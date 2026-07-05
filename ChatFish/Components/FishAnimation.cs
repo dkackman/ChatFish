@@ -143,8 +143,5 @@ public class FishAnimation()
     // Which vertical side to draw the bubble on: above the fish when there is room, else below.
     // Horizontal placement (ahead of the facing direction) is handled in CSS, and horizontal
     // on-screen safety is enforced in AdjustVelocityForBoundaries — not here.
-    private BubbleVerticalSide ComputeBubbleSide(Point position)
-    {
-        return position.Top - BubbleSize.Height < 0 ? BubbleVerticalSide.Below : BubbleVerticalSide.Above;
-    }
+    private BubbleVerticalSide ComputeBubbleSide(Point position) => position.Top - BubbleSize.Height < 0 ? BubbleVerticalSide.Below : BubbleVerticalSide.Above;
 }

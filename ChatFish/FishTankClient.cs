@@ -54,8 +54,5 @@ public class FishTankClient(LLMService llmService, ILogger<FishTankClient> logge
         }
     }
 
-    public void Dispose()
-    {
-        _llmService.MessageFinish -= OnMessageReceived;
-    }
+    public void Dispose() => _llmService.MessageFinish -= OnMessageReceived;
 }

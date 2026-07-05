@@ -11,14 +11,8 @@ public class FishColorTests
     [InlineData(FishColor.Pink, "rgba(255, 182, 193, .65)")]
     [InlineData(FishColor.Yellow, "rgba(255, 255, 224, .65)")]
     [InlineData(FishColor.Red, "rgba(255, 160, 122, .65)")]
-    public void GetColorRgba_MapsKnownColors(FishColor color, string expected)
-    {
-        Assert.Equal(expected, color.GetColorRgba());
-    }
+    public void GetColorRgba_MapsKnownColors(FishColor color, string expected) => Assert.Equal(expected, color.GetColorRgba());
 
     [Fact]
-    public void GetColorRgba_UnknownColor_FallsBackToGray()
-    {
-        Assert.Equal("rgba(220, 220, 220, .65)", ((FishColor)999).GetColorRgba());
-    }
+    public void GetColorRgba_UnknownColor_FallsBackToGray() => Assert.Equal("rgba(220, 220, 220, .65)", ((FishColor)999).GetColorRgba());
 }

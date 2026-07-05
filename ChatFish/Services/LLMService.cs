@@ -63,10 +63,7 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
     }
 
     [JSInvokable]
-    public void OnMessageUpdate(string curMessage)
-    {
-        MessageUpdate?.Invoke(curMessage);
-    }
+    public void OnMessageUpdate(string curMessage) => MessageUpdate?.Invoke(curMessage);
 
     [JSInvokable]
     public void OnMessageFinish(string finalMessage)
@@ -119,16 +116,10 @@ public class LLMService(IJSRuntime JSRuntime, ILogger<LLMService> logger) : IDis
     }
 
     [JSInvokable]
-    public void UpdateEngineInitProgress(string text, double progress)
-    {
-        UpdateEngineInitProgressChanged?.Invoke(text, progress);
-    }
+    public void UpdateEngineInitProgress(string text, double progress) => UpdateEngineInitProgressChanged?.Invoke(text, progress);
 
     public event Action? SelectedModelChanged;
     public event Action<string, double>? UpdateEngineInitProgressChanged;
 
-    public void Dispose()
-    {
-        _dotNetRef?.Dispose();
-    }
+    public void Dispose() => _dotNetRef?.Dispose();
 }
