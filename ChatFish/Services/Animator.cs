@@ -19,8 +19,21 @@ public class Animator : IDisposable
 
     private async void OnTimerElapsedAsync(object? sender, ElapsedEventArgs e)
     {
-        var tankRect = await _JSRuntime.InvokeAsync<ClientRect>("getTankRect");
-        OnAnimationTick?.Invoke(tankRect);
+        // async void: fired from a timer thread, so exceptions here are otherwise unobservable.
+        try
+        {
+            if (disposedValue)
+            {
+                return;
+            }
+
+            var tankRect = await _JSRuntime.InvokeAsync<ClientRect>("getTankRect");
+            OnAnimationTick?.Invoke(tankRect);
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException or ObjectDisposedException or TaskCanceledException)
+        {
+            // Circuit/runtime torn down while interop was in flight; ignore.
+        }
     }
 
     public event Action<ClientRect>? OnAnimationTick;

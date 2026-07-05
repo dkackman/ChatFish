@@ -1,4 +1,5 @@
 ﻿@implements IDisposable
+@using System.Globalization
 @using System.Timers
 @using Microsoft.JSInterop
 @using ChatFish.Components
@@ -8,7 +9,7 @@
 @inject Animator Animator
 
 <div @ref="fishElement" class="fish-container"
-    style="left: @(_fishAnimation.Position.Left)px; top: @(_fishAnimation.Position.Top)px;">
+    style="left: @(Css(_fishAnimation.Position.Left))px; top: @(Css(_fishAnimation.Position.Top))px;">
     <MessageBubble Message="@State.CurrentMessage" IsVisible="@State.IsMessageVisible"
         FishDirection="@_fishAnimation.Velocity.Direction" />
     <div
@@ -71,6 +72,11 @@
     private DotNetObjectReference<Fish>? _dotNetRef;
     private ElementReference fishElement;
     private readonly FishAnimation _fishAnimation = new();
+    private bool _disposed;
+
+    // Format doubles for CSS with the invariant culture so a decimal comma
+    // (e.g. under de-DE) never produces invalid values like "left: 12,5px".
+    private static string Css(double value) => value.ToString(CultureInfo.InvariantCulture);
 
     [JSInvokable]
     public async Task OnDraggingStart()
@@ -112,17 +118,31 @@
 
     protected override void OnInitialized() => Animator.OnAnimationTick += OnTimerElapsedAsync;
 
-    private async void OnTimerElapsedAsync(ClientRect tankRect) => await MoveFishAsync(tankRect);
+    private async void OnTimerElapsedAsync(ClientRect tankRect)
+    {
+        // async void: fired from a timer, so nothing can await or observe exceptions here.
+        try
+        {
+            await MoveFishAsync(tankRect);
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException or ObjectDisposedException or TaskCanceledException)
+        {
+            // Component (or its circuit) was torn down while interop was in flight; ignore.
+        }
+    }
 
     private async Task MoveFishAsync(ClientRect tankRect)
     {
-        if (_fishAnimation.Enabled)
+        if (_fishAnimation.Enabled && !_disposed)
         {
             var fishRect = await JSRuntime.InvokeAsync<ClientRect>("getElementRect", fishElement);
 
             _fishAnimation.IncrementPosition(tankRect, fishRect);
 
-            await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
+            if (!_disposed)
+            {
+                await InvokeAsync(StateHasChanged); // Ensure component re-renders on UI thread
+            }
         }
     }
 
@@ -145,6 +165,7 @@
 
     public void Dispose()
     {
+        _disposed = true;
         Animator.OnAnimationTick -= OnTimerElapsedAsync;
         _fishAnimation.Enabled = false;
         _dotNetRef?.Dispose();
