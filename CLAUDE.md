@@ -43,5 +43,5 @@ Data flow for a chat turn: `ChatInput` → `dispatcher.dispatchMessage` → `llm
 
 ## PWA / deployment
 
-- `vite-plugin-pwa` precaches build assets; the web-llm chunk is large, so `maximumFileSizeToCacheInBytes` is raised to 10MiB in `vite.config.ts`. Model *weights* are fetched/cached separately by web-llm itself (browser Cache Storage), not by the service worker precache.
+- `vite-plugin-pwa` precaches build assets; the web-llm chunk is large, so `maximumFileSizeToCacheInBytes` is raised to 10MiB in `vite.config.ts`. Model _weights_ are fetched/cached separately by web-llm itself (browser Cache Storage), not by the service worker precache.
 - The site is published to a DIG (Chia) on-chain store; `dig.toml` at the repo root configures `store-id`, `output-dir` (`dist`), and the `build-command` run before each `digstore deploy`.
