@@ -28,6 +28,7 @@ interface FishProps {
 export function Fish({ fish, isClientFish, ticker }: FishProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<FishAnimation | null>(null);
+  const dragCleanupRef = useRef<(() => void) | null>(null);
   if (!animationRef.current) {
     animationRef.current = new FishAnimation();
   }
@@ -114,15 +115,23 @@ export function Fish({ fish, isClientFish, ticker }: FishProps) {
       lastX = ev.clientX;
       lastY = ev.clientY;
     };
-    const onUp = () => {
+    const cleanup = () => {
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseup", onUp);
+      dragCleanupRef.current = null;
+    };
+    const onUp = () => {
+      cleanup();
       animation.moveFish({ left: el.offsetLeft, top: el.offsetTop });
       animation.enabled = true;
     };
     document.addEventListener("mousemove", onMove);
     document.addEventListener("mouseup", onUp);
+    dragCleanupRef.current = cleanup;
   }
+
+  // Remove any active drag listeners if the component unmounts mid-drag.
+  useEffect(() => () => { dragCleanupRef.current?.(); }, []);
 
   const spriteDirection = dir === "right" ? "Right" : "Left";
   return (
