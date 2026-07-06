@@ -38,7 +38,12 @@ export function ChatInput() {
         aria-label="Chat message input"
         disabled={isGenerating}
       />
-      <button type="submit" className="chat-submit" disabled={!text.trim() || isGenerating} aria-label="Send message">
+      <button
+        type="submit"
+        className="chat-submit"
+        disabled={!text.trim() || isGenerating}
+        aria-label="Send message"
+      >
         Send
       </button>
     </form>

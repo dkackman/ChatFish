@@ -1,5 +1,14 @@
 import { sendChatMessage } from "../llm/engine";
-import { COMMANDS, EMOTES, fromMessage, fromReply, isCommand, isEmpty, thinking, type ChatMessage } from "./chatMessage";
+import {
+  COMMANDS,
+  EMOTES,
+  fromMessage,
+  fromReply,
+  isCommand,
+  isEmpty,
+  thinking,
+  type ChatMessage,
+} from "./chatMessage";
 import { AI_FISH_ID, USER_FISH_ID, useFishStore } from "./fishStore";
 import { parseReasoning, peek } from "./reasoningParser";
 

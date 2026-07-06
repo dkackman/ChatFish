@@ -12,7 +12,9 @@ function chunk(content: string): CompletionChunk {
   return { choices: [{ delta: { content } }] };
 }
 
-function makeEngine(stream: AsyncIterable<CompletionChunk>): GenerationEngine & { interrupted: boolean } {
+function makeEngine(
+  stream: AsyncIterable<CompletionChunk>
+): GenerationEngine & { interrupted: boolean } {
   const engine = {
     interrupted: false,
     chat: { completions: { create: async () => stream } },

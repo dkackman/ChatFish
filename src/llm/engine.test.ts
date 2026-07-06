@@ -15,7 +15,7 @@ const fakeEngine = {
       create: vi.fn(async (_request: ChatCompletionRequest) =>
         (async function* (): AsyncGenerator<CompletionChunk> {
           yield { choices: [{ delta: { content: "<think>hmm</think>fish reply" } }] };
-        })(),
+        })()
       ),
     },
   },
@@ -32,7 +32,12 @@ beforeEach(() => {
   vi.resetModules();
   fakeEngine.chat.completions.create.mockClear();
   // jsdom has no Worker; engine.ts constructs one to hand to web-llm (mocked above).
-  vi.stubGlobal("Worker", class { constructor() {} });
+  vi.stubGlobal(
+    "Worker",
+    class {
+      constructor() {}
+    }
+  );
 });
 
 async function load() {
@@ -74,7 +79,7 @@ describe("engine", () => {
   it("sendChatMessage throws when no engine is loaded", async () => {
     const engine = await load();
     await expect(
-      engine.sendChatMessage("hi", { onUpdate: noProgress, onFinish: noProgress, onError: noError }),
+      engine.sendChatMessage("hi", { onUpdate: noProgress, onFinish: noProgress, onError: noError })
     ).rejects.toThrow("WebLLM engine is not initialized");
   });
 
@@ -94,7 +99,8 @@ describe("engine", () => {
     const sent = fakeEngine.chat.completions.create.mock.calls[0][0].messages;
     expect(sent[0]).toEqual({
       role: "system",
-      content: "You are ChatFish, a friendly fish that loves to chat with people. You are the color orange",
+      content:
+        "You are ChatFish, a friendly fish that loves to chat with people. You are the color orange",
     });
     expect(sent[1]).toEqual({ role: "user", content: "hello fish" });
 
@@ -111,11 +117,19 @@ describe("engine", () => {
   it("resetEngine clears prior conversation history", async () => {
     const engine = await load();
     await engine.initializeEngine("model-a", noProgress, noError);
-    await engine.sendChatMessage("hello fish", { onUpdate: noProgress, onFinish: noProgress, onError: noError });
+    await engine.sendChatMessage("hello fish", {
+      onUpdate: noProgress,
+      onFinish: noProgress,
+      onError: noError,
+    });
 
     engine.resetEngine();
     await engine.initializeEngine("model-a", noProgress, noError);
-    await engine.sendChatMessage("fresh start", { onUpdate: noProgress, onFinish: noProgress, onError: noError });
+    await engine.sendChatMessage("fresh start", {
+      onUpdate: noProgress,
+      onFinish: noProgress,
+      onError: noError,
+    });
 
     // Only the system prompt and the new turn were sent — no leftover history
     // from the conversation before the reset. (`sent` is the live transcript
@@ -124,7 +138,8 @@ describe("engine", () => {
     expect(sent).toEqual([
       {
         role: "system",
-        content: "You are ChatFish, a friendly fish that loves to chat with people. You are the color orange",
+        content:
+          "You are ChatFish, a friendly fish that loves to chat with people. You are the color orange",
       },
       { role: "user", content: "fresh start" },
       { role: "assistant", content: "fish reply" },

@@ -44,7 +44,7 @@ export interface GenerationEngine {
 export async function generate(
   engine: GenerationEngine,
   messages: LlmMessage[],
-  callbacks: GenerationCallbacks,
+  callbacks: GenerationCallbacks
 ): Promise<void> {
   let watchdog: ReturnType<typeof setTimeout> | undefined;
   let stalled = false;
@@ -73,7 +73,10 @@ export async function generate(
       stream: true,
     });
 
-    armWatchdog(FIRST_TOKEN_TIMEOUT_MS, "The model did not start responding. It may be stuck — try again.");
+    armWatchdog(
+      FIRST_TOKEN_TIMEOUT_MS,
+      "The model did not start responding. It may be stuck — try again."
+    );
 
     let reply = "";
     let lastFlush = 0;
@@ -84,7 +87,10 @@ export async function generate(
       const delta = chunk.choices?.[0]?.delta?.content ?? "";
       if (delta) {
         reply += delta;
-        armWatchdog(INTER_TOKEN_TIMEOUT_MS, "The model stopped responding partway through — try again.");
+        armWatchdog(
+          INTER_TOKEN_TIMEOUT_MS,
+          "The model stopped responding partway through — try again."
+        );
         const now = performance.now();
         if (now - lastFlush > UPDATE_THROTTLE_MS) {
           lastFlush = now;

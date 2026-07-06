@@ -6,7 +6,7 @@ body,
 }
 
 body {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .page {
@@ -24,7 +24,7 @@ main {
   height: 100%;
   position: relative;
   padding: 1.1rem 1.5rem 0;
-  background-image: url('/images/background.jpg');
+  background-image: url("/images/background.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

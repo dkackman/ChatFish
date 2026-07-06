@@ -14,7 +14,12 @@ interface MessageBubbleProps {
   verticalSide: BubbleVerticalSide;
 }
 
-export function MessageBubble({ message, isVisible, fishDirection, verticalSide }: MessageBubbleProps) {
+export function MessageBubble({
+  message,
+  isVisible,
+  fishDirection,
+  verticalSide,
+}: MessageBubbleProps) {
   const modifierClass = MODIFIER_CLASS_ALLOWLIST.has(message.modifier) ? message.modifier : "";
   return (
     <div

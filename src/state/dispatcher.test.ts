@@ -121,7 +121,9 @@ describe("dispatchMessage", () => {
 
   it("a send failure tells the user to load a model first", async () => {
     const { dispatchMessage, useFishStore, llm, AI_FISH_ID, NO_MODEL_MESSAGE } = await load();
-    vi.mocked(llm.sendChatMessage).mockRejectedValueOnce(new Error("WebLLM engine is not initialized"));
+    vi.mocked(llm.sendChatMessage).mockRejectedValueOnce(
+      new Error("WebLLM engine is not initialized")
+    );
 
     await dispatchMessage("hello");
 
@@ -132,7 +134,7 @@ describe("dispatchMessage", () => {
     const { dispatchMessage, useFishStore, llm } = await load();
     let resolveSend!: () => void;
     vi.mocked(llm.sendChatMessage).mockImplementation(
-      () => new Promise<void>((resolve) => (resolveSend = resolve)),
+      () => new Promise<void>((resolve) => (resolveSend = resolve))
     );
 
     const first = dispatchMessage("first message");

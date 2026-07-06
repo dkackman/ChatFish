@@ -1,6 +1,11 @@
 import * as webllm from "@mlc-ai/web-llm";
 import { parseReasoning } from "../state/reasoningParser";
-import { generate, type GenerationCallbacks, type GenerationEngine, type LlmMessage } from "./generation";
+import {
+  generate,
+  type GenerationCallbacks,
+  type GenerationEngine,
+  type LlmMessage,
+} from "./generation";
 
 export const DEFAULT_MODEL = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
 
@@ -20,7 +25,9 @@ export function getAvailableModels(): string[] {
 export async function getDownloadedModels(): Promise<string[]> {
   const ids = getAvailableModels();
   const cached = await Promise.all(
-    ids.map(async (id) => ((await webllm.hasModelInCache(id, webllm.prebuiltAppConfig)) ? id : null)),
+    ids.map(async (id) =>
+      (await webllm.hasModelInCache(id, webllm.prebuiltAppConfig)) ? id : null
+    )
   );
   return cached.filter((id): id is string => id !== null);
 }
@@ -37,14 +44,14 @@ export function resetEngine(): void {
 export async function initializeEngine(
   modelId: string,
   onProgress: (text: string, progress: number) => void,
-  onError: (message: string) => void,
+  onError: (message: string) => void
 ): Promise<string | null> {
   if (!engine) {
     try {
       const created = await webllm.CreateWebWorkerMLCEngine(
         new Worker(new URL("./worker.ts", import.meta.url), { type: "module" }),
         modelId,
-        { initProgressCallback: (report) => onProgress(report.text, report.progress) },
+        { initProgressCallback: (report) => onProgress(report.text, report.progress) }
       );
       // The web-llm engine satisfies GenerationEngine structurally; the cast
       // avoids coupling our narrow interface to web-llm's full request types.

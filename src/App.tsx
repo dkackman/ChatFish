@@ -35,8 +35,18 @@ export default function App() {
         </article>
       </main>
       <LLMSettingsDialog />
-      <FloatingToast isVisible={isOffline} position="BottomRight" showCloseButton={false} toast={OFFLINE_TOAST} />
-      <FloatingToast isVisible={toast !== null} position="TopRight" toast={toast} onClose={closeToast} />
+      <FloatingToast
+        isVisible={isOffline}
+        position="BottomRight"
+        showCloseButton={false}
+        toast={OFFLINE_TOAST}
+      />
+      <FloatingToast
+        isVisible={toast !== null}
+        position="TopRight"
+        toast={toast}
+        onClose={closeToast}
+      />
     </div>
   );
 }

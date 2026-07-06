@@ -1,6 +1,10 @@
 import { useLayoutEffect, useEffect, useRef, useState } from "react";
 import { FishAnimation } from "../engine/fishAnimation";
-import { direction as velocityDirection, type BubbleVerticalSide, type Direction } from "../engine/geometry";
+import {
+  direction as velocityDirection,
+  type BubbleVerticalSide,
+  type Direction,
+} from "../engine/geometry";
 import type { TankTicker } from "../engine/ticker";
 import type { FishData } from "../state/fishStore";
 import { MessageBubble } from "./MessageBubble";
@@ -131,7 +135,12 @@ export function Fish({ fish, isClientFish, ticker }: FishProps) {
   }
 
   // Remove any active drag listeners if the component unmounts mid-drag.
-  useEffect(() => () => { dragCleanupRef.current?.(); }, []);
+  useEffect(
+    () => () => {
+      dragCleanupRef.current?.();
+    },
+    []
+  );
 
   const spriteDirection = dir === "right" ? "Right" : "Left";
   return (

@@ -37,7 +37,12 @@ export function LLMSettingsDialog() {
           <strong id="llm-settings-title" className="me-auto">
             Configure Chat LLM Settings
           </strong>
-          <button type="button" className="btn-close floating-close" onClick={closeSettings} aria-label="Close"></button>
+          <button
+            type="button"
+            className="btn-close floating-close"
+            onClick={closeSettings}
+            aria-label="Close"
+          ></button>
         </div>
         <div className="floating-body">
           <div className="download-container">
@@ -80,7 +85,12 @@ export function LLMSettingsDialog() {
               <label htmlFor="download-progress" className="visually-hidden">
                 Download progress
               </label>
-              <progress id="download-progress" value={progressValue * 100} max={100} className="w-100 mb-2" />
+              <progress
+                id="download-progress"
+                value={progressValue * 100}
+                max={100}
+                className="w-100 mb-2"
+              />
               <p id="download-status" aria-live="polite">
                 {progressText}
               </p>

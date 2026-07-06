@@ -61,7 +61,11 @@ describe("llmStore", () => {
     await useLlmStore.getState().loadEngine();
 
     expect(llm.resetEngine).toHaveBeenCalled();
-    expect(llm.initializeEngine).toHaveBeenCalledWith("model-b", expect.any(Function), expect.any(Function));
+    expect(llm.initializeEngine).toHaveBeenCalledWith(
+      "model-b",
+      expect.any(Function),
+      expect.any(Function)
+    );
     expect(useLlmStore.getState().downloadedModels).toEqual(["model-a"]);
     expect(useLlmStore.getState().loadedModel).toBe("model-b");
     expect(useLlmStore.getState().isProgressVisible).toBe(true);

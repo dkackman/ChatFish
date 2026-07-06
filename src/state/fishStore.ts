@@ -43,8 +43,20 @@ const hideTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 export const useFishStore = create<FishTankState>((set, get) => ({
   fish: {
-    [AI_FISH_ID]: { id: AI_FISH_ID, color: "Orange", scale: "1.0", message: emptyMessage(), isMessageVisible: false },
-    [USER_FISH_ID]: { id: USER_FISH_ID, color: "Blue", scale: "0.9", message: emptyMessage(), isMessageVisible: false },
+    [AI_FISH_ID]: {
+      id: AI_FISH_ID,
+      color: "Orange",
+      scale: "1.0",
+      message: emptyMessage(),
+      isMessageVisible: false,
+    },
+    [USER_FISH_ID]: {
+      id: USER_FISH_ID,
+      color: "Blue",
+      scale: "0.9",
+      message: emptyMessage(),
+      isMessageVisible: false,
+    },
   },
   toast: null,
   // The settings dialog is visible on startup, matching the Blazor app.
@@ -66,11 +78,13 @@ export const useFishStore = create<FishTankState>((set, get) => ({
         id,
         setTimeout(() => {
           set((s) => ({ fish: { ...s.fish, [id]: { ...s.fish[id], isMessageVisible: false } } }));
-        }, MESSAGE_VISIBILITY_MS),
+        }, MESSAGE_VISIBILITY_MS)
       );
     }
 
-    set((s) => ({ fish: { ...s.fish, [id]: { ...s.fish[id], message, isMessageVisible: visible } } }));
+    set((s) => ({
+      fish: { ...s.fish, [id]: { ...s.fish[id], message, isMessageVisible: visible } },
+    }));
   },
 
   showToast(toast) {

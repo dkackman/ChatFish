@@ -60,7 +60,8 @@ export const useLlmStore = create<LlmState>((set, get) => ({
       progressValue: 0,
     });
 
-    const onProgress = (text: string, progress: number) => set({ progressText: text, progressValue: progress });
+    const onProgress = (text: string, progress: number) =>
+      set({ progressText: text, progressValue: progress });
     // Init/download failures show in the dialog status AND the AI fish bubble,
     // matching the Blazor app's MessageError fan-out.
     const onError = (message: string) => {

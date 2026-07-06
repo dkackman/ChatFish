@@ -9,17 +9,33 @@ interface FloatingToastProps {
   onClose?: () => void;
 }
 
-export function FloatingToast({ isVisible, position, toast, showCloseButton = true, onClose }: FloatingToastProps) {
+export function FloatingToast({
+  isVisible,
+  position,
+  toast,
+  showCloseButton = true,
+  onClose,
+}: FloatingToastProps) {
   if (!isVisible || !toast) {
     return null;
   }
   return (
     <div className={positionClasses(position)}>
-      <div className="toast show floating-component" role="alert" aria-live="assertive" aria-atomic="true">
+      <div
+        className="toast show floating-component"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
         <div className="toast-header floating-header">
           <strong className="me-auto">{toast.title}</strong>
           {showCloseButton && (
-            <button type="button" className="btn-close floating-close" onClick={onClose} aria-label="Close"></button>
+            <button
+              type="button"
+              className="btn-close floating-close"
+              onClick={onClose}
+              aria-label="Close"
+            ></button>
           )}
         </div>
         <div className="toast-body floating-body">

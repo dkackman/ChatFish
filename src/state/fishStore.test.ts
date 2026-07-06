@@ -18,8 +18,16 @@ describe("fishStore", () => {
     const { useFishStore, AI_FISH_ID, USER_FISH_ID } = await load();
     const { fish } = useFishStore.getState();
 
-    expect(fish[AI_FISH_ID]).toMatchObject({ color: "Orange", scale: "1.0", isMessageVisible: false });
-    expect(fish[USER_FISH_ID]).toMatchObject({ color: "Blue", scale: "0.9", isMessageVisible: false });
+    expect(fish[AI_FISH_ID]).toMatchObject({
+      color: "Orange",
+      scale: "1.0",
+      isMessageVisible: false,
+    });
+    expect(fish[USER_FISH_ID]).toMatchObject({
+      color: "Blue",
+      scale: "0.9",
+      isMessageVisible: false,
+    });
   });
 
   it("setting a message makes it visible", async () => {

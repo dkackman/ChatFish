@@ -25,7 +25,11 @@ export function parseReasoning(content: string | null | undefined): ReasoningRes
   const openIdx = text.indexOf(OPEN_TAG);
   if (openIdx >= 0) {
     // Mid-reasoning: no closing tag yet, so there is no answer to show.
-    return { reasoning: text.slice(openIdx + OPEN_TAG.length).trim(), answer: "", isReasoning: true };
+    return {
+      reasoning: text.slice(openIdx + OPEN_TAG.length).trim(),
+      answer: "",
+      isReasoning: true,
+    };
   }
 
   // No reasoning markup at all: an ordinary model, or an answer-only stream.

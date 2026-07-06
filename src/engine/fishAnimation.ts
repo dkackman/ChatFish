@@ -98,7 +98,7 @@ export class FishAnimation {
     currentVelocity: Velocity,
     size: Size,
     nextPosition: Point,
-    tank: TankRect,
+    tank: TankRect
   ): Velocity {
     // Position is tank-relative, so the tank spans (0, 0) to (width, height).
     // Vertical bounds use the fish box only; the bubble avoids vertical clipping
@@ -123,7 +123,11 @@ export class FishAnimation {
 
   // The horizontal span the fish occupies. While talking this includes the
   // bubble, which extends from the fish centre outward in the facing direction.
-  private horizontalExtent(position: Point, size: Size, dir: Direction): { left: number; right: number } {
+  private horizontalExtent(
+    position: Point,
+    size: Size,
+    dir: Direction
+  ): { left: number; right: number } {
     const fishLeft = position.left;
     const fishRight = position.left + size.width;
     if (!this.hasMessage) {

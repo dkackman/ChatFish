@@ -30,11 +30,13 @@
 ### Task 1: Scaffold the Vite + React + TypeScript project
 
 **Files:**
+
 - Create: `package.json`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `index.html`, `src/main.tsx`, `src/App.tsx`, `src/vite-env.d.ts`
 - Create: `public/` (assets copied from `ChatFish/wwwroot/`)
 - Modify: `.gitignore`
 
 **Interfaces:**
+
 - Produces: a running Vite app with `npm run dev`, `npm run build`, `npm test` all green; assets served from `public/`.
 
 - [ ] **Step 1: Write project config files**
@@ -93,10 +95,7 @@ export default defineConfig({
 ```json
 {
   "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ]
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }]
 }
 ```
 
@@ -178,7 +177,7 @@ import App from "./App";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
-  </StrictMode>,
+  </StrictMode>
 );
 ```
 
@@ -235,10 +234,12 @@ git commit -m "Scaffold Vite + React + TypeScript app with copied static assets"
 ### Task 2: Geometry and velocity primitives
 
 **Files:**
+
 - Create: `src/engine/geometry.ts`
 - Test: `src/engine/geometry.test.ts`
 
 **Interfaces:**
+
 - Produces:
   - `interface Point { left: number; top: number }`
   - `interface Size { width: number; height: number }`
@@ -334,10 +335,12 @@ git commit -m "Add geometry and velocity primitives"
 ### Task 3: Fish physics (FishAnimation port)
 
 **Files:**
+
 - Create: `src/engine/fishAnimation.ts`
 - Test: `src/engine/fishAnimation.test.ts`
 
 **Interfaces:**
+
 - Consumes: everything from `src/engine/geometry.ts`.
 - Produces: `class FishAnimation` with fields `size: Size`, `position: Point`, `velocity: Velocity`, `enabled: boolean`, `hasSize: boolean`, `hasMessage: boolean`, `bubbleSize: Size`, `bubbleSide: BubbleVerticalSide` and methods `setSize(size: Size): void`, `setBubble(size: Size): void`, `clearBubble(): void`, `initializePosition(tank: TankRect): void`, `moveFish(p: Point): void`, `incrementPosition(tank: TankRect): void`.
 
@@ -578,7 +581,7 @@ export class FishAnimation {
     currentVelocity: Velocity,
     size: Size,
     nextPosition: Point,
-    tank: TankRect,
+    tank: TankRect
   ): Velocity {
     // Position is tank-relative, so the tank spans (0, 0) to (width, height).
     // Vertical bounds use the fish box only; the bubble avoids vertical clipping
@@ -603,7 +606,11 @@ export class FishAnimation {
 
   // The horizontal span the fish occupies. While talking this includes the
   // bubble, which extends from the fish centre outward in the facing direction.
-  private horizontalExtent(position: Point, size: Size, dir: Direction): { left: number; right: number } {
+  private horizontalExtent(
+    position: Point,
+    size: Size,
+    dir: Direction
+  ): { left: number; right: number } {
     const fishLeft = position.left;
     const fishRight = position.left + size.width;
     if (!this.hasMessage) {
@@ -640,10 +647,12 @@ git commit -m "Port fish physics engine from FishAnimation.cs"
 ### Task 4: Chat message model
 
 **Files:**
+
 - Create: `src/state/chatMessage.ts`
 - Test: `src/state/chatMessage.test.ts`
 
 **Interfaces:**
+
 - Produces:
   - `interface ChatMessage { message: string; modifier: string; reasoning: string }`
   - `THINKING_MODIFIER = "thinking"`, `COMMANDS: Record<string,string>`, `EMOTES: Record<string,string>`
@@ -801,10 +810,12 @@ git commit -m "Port chat message model with commands and emotes"
 ### Task 5: Reasoning parser
 
 **Files:**
+
 - Create: `src/state/reasoningParser.ts`
 - Test: `src/state/reasoningParser.test.ts`
 
 **Interfaces:**
+
 - Produces: `interface ReasoningResult { reasoning: string; answer: string; isReasoning: boolean }`, `parseReasoning(content: string | null | undefined): ReasoningResult`, `peek(reasoning: string, maxLength?: number): string` (default 180).
 
 - [ ] **Step 1: Write the failing tests** (`src/state/reasoningParser.test.ts`, port of `ReasoningParserTests.cs`)
@@ -900,7 +911,11 @@ export function parseReasoning(content: string | null | undefined): ReasoningRes
   const openIdx = text.indexOf(OPEN_TAG);
   if (openIdx >= 0) {
     // Mid-reasoning: no closing tag yet, so there is no answer to show.
-    return { reasoning: text.slice(openIdx + OPEN_TAG.length).trim(), answer: "", isReasoning: true };
+    return {
+      reasoning: text.slice(openIdx + OPEN_TAG.length).trim(),
+      answer: "",
+      isReasoning: true,
+    };
   }
 
   // No reasoning markup at all: an ordinary model, or an answer-only stream.
@@ -936,10 +951,12 @@ git commit -m "Port reasoning parser for think-tag streams"
 ### Task 6: Fish tank store
 
 **Files:**
+
 - Create: `src/state/fishStore.ts`
 - Test: `src/state/fishStore.test.ts`
 
 **Interfaces:**
+
 - Consumes: `ChatMessage`, `emptyMessage`, `isEmpty`, `messagesEqual` from `./chatMessage`.
 - Produces:
   - `type FishColor = "Blue" | "Green" | "Orange" | "Pink" | "Yellow" | "Red"`
@@ -971,8 +988,16 @@ describe("fishStore", () => {
     const { useFishStore, AI_FISH_ID, USER_FISH_ID } = await load();
     const { fish } = useFishStore.getState();
 
-    expect(fish[AI_FISH_ID]).toMatchObject({ color: "Orange", scale: "1.0", isMessageVisible: false });
-    expect(fish[USER_FISH_ID]).toMatchObject({ color: "Blue", scale: "0.9", isMessageVisible: false });
+    expect(fish[AI_FISH_ID]).toMatchObject({
+      color: "Orange",
+      scale: "1.0",
+      isMessageVisible: false,
+    });
+    expect(fish[USER_FISH_ID]).toMatchObject({
+      color: "Blue",
+      scale: "0.9",
+      isMessageVisible: false,
+    });
   });
 
   it("setting a message makes it visible", async () => {
@@ -1083,8 +1108,20 @@ const hideTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 export const useFishStore = create<FishTankState>((set, get) => ({
   fish: {
-    [AI_FISH_ID]: { id: AI_FISH_ID, color: "Orange", scale: "1.0", message: emptyMessage(), isMessageVisible: false },
-    [USER_FISH_ID]: { id: USER_FISH_ID, color: "Blue", scale: "0.9", message: emptyMessage(), isMessageVisible: false },
+    [AI_FISH_ID]: {
+      id: AI_FISH_ID,
+      color: "Orange",
+      scale: "1.0",
+      message: emptyMessage(),
+      isMessageVisible: false,
+    },
+    [USER_FISH_ID]: {
+      id: USER_FISH_ID,
+      color: "Blue",
+      scale: "0.9",
+      message: emptyMessage(),
+      isMessageVisible: false,
+    },
   },
   toast: null,
   // The settings dialog is visible on startup, matching the Blazor app.
@@ -1105,11 +1142,13 @@ export const useFishStore = create<FishTankState>((set, get) => ({
         id,
         setTimeout(() => {
           set((s) => ({ fish: { ...s.fish, [id]: { ...s.fish[id], isMessageVisible: false } } }));
-        }, MESSAGE_VISIBILITY_MS),
+        }, MESSAGE_VISIBILITY_MS)
       );
     }
 
-    set((s) => ({ fish: { ...s.fish, [id]: { ...s.fish[id], message, isMessageVisible: visible } } }));
+    set((s) => ({
+      fish: { ...s.fish, [id]: { ...s.fish[id], message, isMessageVisible: visible } },
+    }));
   },
 
   showToast(toast) {
@@ -1146,10 +1185,12 @@ git commit -m "Add fish tank store with bubble visibility timers"
 ### Task 7: Streaming generation with watchdogs
 
 **Files:**
+
 - Create: `src/llm/generation.ts`, `src/llm/worker.ts`
 - Test: `src/llm/generation.test.ts`
 
 **Interfaces:**
+
 - Produces:
   - `interface LlmMessage { role: "system" | "user" | "assistant"; content: string }`
   - `interface GenerationCallbacks { onUpdate(partial: string): void; onFinish(final: string): void; onError(message: string): void }`
@@ -1185,7 +1226,9 @@ function chunk(content: string): CompletionChunk {
   return { choices: [{ delta: { content } }] };
 }
 
-function makeEngine(stream: AsyncIterable<CompletionChunk>): GenerationEngine & { interrupted: boolean } {
+function makeEngine(
+  stream: AsyncIterable<CompletionChunk>
+): GenerationEngine & { interrupted: boolean } {
   const engine = {
     interrupted: false,
     chat: { completions: { create: async () => stream } },
@@ -1344,7 +1387,7 @@ export interface GenerationEngine {
 export async function generate(
   engine: GenerationEngine,
   messages: LlmMessage[],
-  callbacks: GenerationCallbacks,
+  callbacks: GenerationCallbacks
 ): Promise<void> {
   let watchdog: ReturnType<typeof setTimeout> | undefined;
   let stalled = false;
@@ -1373,7 +1416,10 @@ export async function generate(
       stream: true,
     });
 
-    armWatchdog(FIRST_TOKEN_TIMEOUT_MS, "The model did not start responding. It may be stuck — try again.");
+    armWatchdog(
+      FIRST_TOKEN_TIMEOUT_MS,
+      "The model did not start responding. It may be stuck — try again."
+    );
 
     let reply = "";
     let lastFlush = 0;
@@ -1384,7 +1430,10 @@ export async function generate(
       const delta = chunk.choices?.[0]?.delta?.content ?? "";
       if (delta) {
         reply += delta;
-        armWatchdog(INTER_TOKEN_TIMEOUT_MS, "The model stopped responding partway through — try again.");
+        armWatchdog(
+          INTER_TOKEN_TIMEOUT_MS,
+          "The model stopped responding partway through — try again."
+        );
         const now = performance.now();
         if (now - lastFlush > UPDATE_THROTTLE_MS) {
           lastFlush = now;
@@ -1423,10 +1472,12 @@ git commit -m "Add streaming LLM generation with stall watchdogs and web worker"
 ### Task 8: LLM engine module (transcript, init, model queries)
 
 **Files:**
+
 - Create: `src/llm/engine.ts`
 - Test: `src/llm/engine.test.ts`
 
 **Interfaces:**
+
 - Consumes: `generate`, `GenerationCallbacks`, `GenerationEngine`, `LlmMessage` from `./generation`; `parseReasoning` from `../state/reasoningParser`; `@mlc-ai/web-llm` (`prebuiltAppConfig`, `hasModelInCache`, `CreateWebWorkerMLCEngine`).
 - Produces:
   - `DEFAULT_MODEL = "Llama-3.2-1B-Instruct-q4f16_1-MLC"`
@@ -1448,7 +1499,7 @@ const fakeEngine = {
       create: vi.fn(async () =>
         (async function* (): AsyncGenerator<CompletionChunk> {
           yield { choices: [{ delta: { content: "<think>hmm</think>fish reply" } }] };
-        })(),
+        })()
       ),
     },
   },
@@ -1464,7 +1515,12 @@ vi.mock("@mlc-ai/web-llm", () => ({
 beforeEach(() => {
   vi.resetModules();
   // jsdom has no Worker; engine.ts constructs one to hand to web-llm (mocked above).
-  vi.stubGlobal("Worker", class { constructor() {} });
+  vi.stubGlobal(
+    "Worker",
+    class {
+      constructor() {}
+    }
+  );
 });
 
 async function load() {
@@ -1506,7 +1562,7 @@ describe("engine", () => {
   it("sendChatMessage throws when no engine is loaded", async () => {
     const engine = await load();
     await expect(
-      engine.sendChatMessage("hi", { onUpdate: noProgress, onFinish: noProgress, onError: noError }),
+      engine.sendChatMessage("hi", { onUpdate: noProgress, onFinish: noProgress, onError: noError })
     ).rejects.toThrow("WebLLM engine is not initialized");
   });
 
@@ -1526,7 +1582,8 @@ describe("engine", () => {
     const sent = fakeEngine.chat.completions.create.mock.calls[0][0].messages;
     expect(sent[0]).toEqual({
       role: "system",
-      content: "You are ChatFish, a friendly fish that loves to chat with people. You are the color orange",
+      content:
+        "You are ChatFish, a friendly fish that loves to chat with people. You are the color orange",
     });
     expect(sent[1]).toEqual({ role: "user", content: "hello fish" });
 
@@ -1551,7 +1608,12 @@ Run: `npx vitest run src/llm/engine.test.ts` — Expected: FAIL.
 ```ts
 import * as webllm from "@mlc-ai/web-llm";
 import { parseReasoning } from "../state/reasoningParser";
-import { generate, type GenerationCallbacks, type GenerationEngine, type LlmMessage } from "./generation";
+import {
+  generate,
+  type GenerationCallbacks,
+  type GenerationEngine,
+  type LlmMessage,
+} from "./generation";
 
 export const DEFAULT_MODEL = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
 
@@ -1571,7 +1633,9 @@ export function getAvailableModels(): string[] {
 export async function getDownloadedModels(): Promise<string[]> {
   const ids = getAvailableModels();
   const cached = await Promise.all(
-    ids.map(async (id) => ((await webllm.hasModelInCache(id, webllm.prebuiltAppConfig)) ? id : null)),
+    ids.map(async (id) =>
+      (await webllm.hasModelInCache(id, webllm.prebuiltAppConfig)) ? id : null
+    )
   );
   return cached.filter((id): id is string => id !== null);
 }
@@ -1585,14 +1649,14 @@ export function resetEngine(): void {
 export async function initializeEngine(
   modelId: string,
   onProgress: (text: string, progress: number) => void,
-  onError: (message: string) => void,
+  onError: (message: string) => void
 ): Promise<string | null> {
   if (!engine) {
     try {
       const created = await webllm.CreateWebWorkerMLCEngine(
         new Worker(new URL("./worker.ts", import.meta.url), { type: "module" }),
         modelId,
-        { initProgressCallback: (report) => onProgress(report.text, report.progress) },
+        { initProgressCallback: (report) => onProgress(report.text, report.progress) }
       );
       // The web-llm engine satisfies GenerationEngine structurally; the cast
       // avoids coupling our narrow interface to web-llm's full request types.
@@ -1647,10 +1711,12 @@ git commit -m "Add LLM engine module with transcript and model cache queries"
 ### Task 9: LLM store
 
 **Files:**
+
 - Create: `src/state/llmStore.ts`
 - Test: `src/state/llmStore.test.ts`
 
 **Interfaces:**
+
 - Consumes: `src/llm/engine.ts` (all exports), `useFishStore`/`AI_FISH_ID` from `./fishStore`, `fromReply` from `./chatMessage`.
 - Produces: `SELECTED_MODEL_STORAGE_KEY = "selectedModel"` and `useLlmStore` (zustand) with state `{ availableModels: string[]; downloadedModels: string[]; selectedModel: string; loadedModel: string | null; progressText: string; progressValue: number; isProgressVisible: boolean }` and actions `initialize(): Promise<void>`, `selectModel(modelId: string): void`, `loadEngine(): Promise<void>`.
 
@@ -1719,7 +1785,11 @@ describe("llmStore", () => {
     await useLlmStore.getState().loadEngine();
 
     expect(llm.resetEngine).toHaveBeenCalled();
-    expect(llm.initializeEngine).toHaveBeenCalledWith("model-b", expect.any(Function), expect.any(Function));
+    expect(llm.initializeEngine).toHaveBeenCalledWith(
+      "model-b",
+      expect.any(Function),
+      expect.any(Function)
+    );
     expect(useLlmStore.getState().loadedModel).toBe("model-b");
     expect(useLlmStore.getState().isProgressVisible).toBe(true);
   });
@@ -1812,7 +1882,8 @@ export const useLlmStore = create<LlmState>((set, get) => ({
       progressValue: 0,
     });
 
-    const onProgress = (text: string, progress: number) => set({ progressText: text, progressValue: progress });
+    const onProgress = (text: string, progress: number) =>
+      set({ progressText: text, progressValue: progress });
     // Init/download failures show in the dialog status AND the AI fish bubble,
     // matching the Blazor app's MessageError fan-out.
     const onError = (message: string) => {
@@ -1843,10 +1914,12 @@ git commit -m "Add LLM store for model selection, loading, and progress"
 ### Task 10: Message dispatcher
 
 **Files:**
+
 - Create: `src/state/dispatcher.ts`
 - Test: `src/state/dispatcher.test.ts`
 
 **Interfaces:**
+
 - Consumes: `chatMessage.ts`, `reasoningParser.ts`, `fishStore.ts`, `sendChatMessage` from `../llm/engine`.
 - Produces: `dispatchMessage(text: string): Promise<void>`, constants `ABOUT_URL`, `EMPTY_REPLY_FALLBACK`, `NO_MODEL_MESSAGE`.
 
@@ -1976,7 +2049,9 @@ describe("dispatchMessage", () => {
 
   it("a send failure tells the user to load a model first", async () => {
     const { dispatchMessage, useFishStore, llm, AI_FISH_ID, NO_MODEL_MESSAGE } = await load();
-    vi.mocked(llm.sendChatMessage).mockRejectedValueOnce(new Error("WebLLM engine is not initialized"));
+    vi.mocked(llm.sendChatMessage).mockRejectedValueOnce(
+      new Error("WebLLM engine is not initialized")
+    );
 
     await dispatchMessage("hello");
 
@@ -1993,7 +2068,16 @@ Run: `npx vitest run src/state/dispatcher.test.ts` — Expected: FAIL.
 
 ```ts
 import { sendChatMessage } from "../llm/engine";
-import { COMMANDS, EMOTES, fromMessage, fromReply, isCommand, isEmpty, thinking, type ChatMessage } from "./chatMessage";
+import {
+  COMMANDS,
+  EMOTES,
+  fromMessage,
+  fromReply,
+  isCommand,
+  isEmpty,
+  thinking,
+  type ChatMessage,
+} from "./chatMessage";
 import { AI_FISH_ID, USER_FISH_ID, useFishStore } from "./fishStore";
 import { parseReasoning, peek } from "./reasoningParser";
 
@@ -2092,11 +2176,13 @@ git commit -m "Add message dispatcher with command routing and streaming updates
 ### Task 11: Styles, MessageBubble, and FloatingToast
 
 **Files:**
+
 - Create: `src/styles/app.css`, `src/styles/utilities.css`, `src/styles/floating.css`, `src/styles/messageBubble.css`
 - Create: `src/components/positioning.ts`, `src/components/MessageBubble.tsx`, `src/components/FloatingToast.tsx`
 - Modify: `src/main.tsx` (import global styles)
 
 **Interfaces:**
+
 - Consumes: `ChatMessage`, `EMOTES`, `THINKING_MODIFIER`, `isThinking` from `../state/chatMessage`; `Toast` from `../state/fishStore`; `Direction`, `BubbleVerticalSide` from `../engine/geometry`.
 - Produces:
   - `type FloatingPosition = "TopRight" | "TopLeft" | "BottomRight" | "BottomLeft"`; `positionClasses(position: FloatingPosition): string`
@@ -2122,7 +2208,7 @@ body,
 }
 
 body {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .page {
@@ -2140,7 +2226,7 @@ main {
   height: 100%;
   position: relative;
   padding: 1.1rem 1.5rem 0;
-  background-image: url('/images/background.jpg');
+  background-image: url("/images/background.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -2176,18 +2262,42 @@ main {
 
 ```css
 /* The small subset of Bootstrap utilities the app's markup relies on. */
-.position-fixed { position: fixed; }
-.top-0 { top: 0; }
-.end-0 { right: 0; }
-.bottom-0 { bottom: 0; }
-.start-0 { left: 0; }
-.p-3 { padding: 1rem; }
-.me-auto { margin-right: auto; }
-.w-100 { width: 100%; }
-.mb-0 { margin-bottom: 0; }
-.mb-2 { margin-bottom: 0.5rem; }
-.ms-3 { margin-left: 1rem; }
-.ps-3 { padding-left: 1rem; }
+.position-fixed {
+  position: fixed;
+}
+.top-0 {
+  top: 0;
+}
+.end-0 {
+  right: 0;
+}
+.bottom-0 {
+  bottom: 0;
+}
+.start-0 {
+  left: 0;
+}
+.p-3 {
+  padding: 1rem;
+}
+.me-auto {
+  margin-right: auto;
+}
+.w-100 {
+  width: 100%;
+}
+.mb-0 {
+  margin-bottom: 0;
+}
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+.ms-3 {
+  margin-left: 1rem;
+}
+.ps-3 {
+  padding-left: 1rem;
+}
 
 .list-unstyled {
   padding-left: 0;
@@ -2217,7 +2327,9 @@ main {
   height: 1em;
   padding: 0.25em;
   color: #000;
-  background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+  background: transparent
+    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e")
+    center/1em auto no-repeat;
   border: 0;
   border-radius: 0.375rem;
   opacity: 0.5;
@@ -2278,7 +2390,12 @@ interface MessageBubbleProps {
   verticalSide: BubbleVerticalSide;
 }
 
-export function MessageBubble({ message, isVisible, fishDirection, verticalSide }: MessageBubbleProps) {
+export function MessageBubble({
+  message,
+  isVisible,
+  fishDirection,
+  verticalSide,
+}: MessageBubbleProps) {
   const modifierClass = MODIFIER_CLASS_ALLOWLIST.has(message.modifier) ? message.modifier : "";
   return (
     <div
@@ -2325,17 +2442,33 @@ interface FloatingToastProps {
   onClose?: () => void;
 }
 
-export function FloatingToast({ isVisible, position, toast, showCloseButton = true, onClose }: FloatingToastProps) {
+export function FloatingToast({
+  isVisible,
+  position,
+  toast,
+  showCloseButton = true,
+  onClose,
+}: FloatingToastProps) {
   if (!isVisible || !toast) {
     return null;
   }
   return (
     <div className={positionClasses(position)}>
-      <div className="toast show floating-component" role="alert" aria-live="assertive" aria-atomic="true">
+      <div
+        className="toast show floating-component"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
         <div className="toast-header floating-header">
           <strong className="me-auto">{toast.title}</strong>
           {showCloseButton && (
-            <button type="button" className="btn-close floating-close" onClick={onClose} aria-label="Close"></button>
+            <button
+              type="button"
+              className="btn-close floating-close"
+              onClick={onClose}
+              aria-label="Close"
+            ></button>
           )}
         </div>
         <div className="toast-body floating-body">
@@ -2373,10 +2506,12 @@ git commit -m "Add styles, message bubble, and floating toast components"
 ### Task 12: Animation ticker, Fish, and FishTank
 
 **Files:**
+
 - Create: `src/engine/ticker.ts`, `src/components/Fish.tsx`, `src/components/FishTank.tsx`, `src/styles/fish.css`
 - Test: `src/engine/ticker.test.ts`
 
 **Interfaces:**
+
 - Consumes: `FishAnimation`, geometry types, `useFishStore`, `FishData`, `USER_FISH_ID`, `MessageBubble`, `ChatInput` (placeholder import added in Task 13 — here render without it, see Step 6 note).
 - Produces:
   - `TICK_MS = 50`; `createFixedStepper(stepMs?: number, maxSteps?: number): (now: number) => number`
@@ -2520,7 +2655,11 @@ cp ChatFish/ChatFish/Components/Fish.razor.css src/styles/fish.css
 ```tsx
 import { useLayoutEffect, useEffect, useRef, useState } from "react";
 import { FishAnimation } from "../engine/fishAnimation";
-import { direction as velocityDirection, type BubbleVerticalSide, type Direction } from "../engine/geometry";
+import {
+  direction as velocityDirection,
+  type BubbleVerticalSide,
+  type Direction,
+} from "../engine/geometry";
 import type { TankTicker } from "../engine/ticker";
 import type { FishData } from "../state/fishStore";
 import { MessageBubble } from "./MessageBubble";
@@ -2742,10 +2881,12 @@ git commit -m "Add animation ticker, fish, and fish tank components"
 ### Task 13: ChatInput, LLMSettingsDialog, and App wiring
 
 **Files:**
+
 - Create: `src/components/ChatInput.tsx`, `src/components/LLMSettingsDialog.tsx`, `src/styles/chatInput.css`, `src/styles/llmSettings.css`
 - Modify: `src/App.tsx`
 
 **Interfaces:**
+
 - Consumes: `dispatchMessage`, `useFishStore`, `useLlmStore`, `FloatingToast`, `positionClasses`, `FishTank`.
 - Produces: the complete app — `<ChatInput />`, `<LLMSettingsDialog />`, final `App`.
 
@@ -2798,7 +2939,12 @@ export function ChatInput() {
         placeholder="Type a short message... (/help for more)"
         aria-label="Chat message input"
       />
-      <button type="submit" className="chat-submit" disabled={!text.trim()} aria-label="Send message">
+      <button
+        type="submit"
+        className="chat-submit"
+        disabled={!text.trim()}
+        aria-label="Send message"
+      >
         Send
       </button>
     </form>
@@ -2848,7 +2994,12 @@ export function LLMSettingsDialog() {
           <strong id="llm-settings-title" className="me-auto">
             Configure Chat LLM Settings
           </strong>
-          <button type="button" className="btn-close floating-close" onClick={closeSettings} aria-label="Close"></button>
+          <button
+            type="button"
+            className="btn-close floating-close"
+            onClick={closeSettings}
+            aria-label="Close"
+          ></button>
         </div>
         <div className="floating-body">
           <div className="download-container">
@@ -2891,7 +3042,12 @@ export function LLMSettingsDialog() {
               <label htmlFor="download-progress" className="visually-hidden">
                 Download progress
               </label>
-              <progress id="download-progress" value={progressValue * 100} max={100} className="w-100 mb-2" />
+              <progress
+                id="download-progress"
+                value={progressValue * 100}
+                max={100}
+                className="w-100 mb-2"
+              />
               <p id="download-status" aria-live="polite">
                 {progressText}
               </p>
@@ -2944,8 +3100,18 @@ export default function App() {
         </article>
       </main>
       <LLMSettingsDialog />
-      <FloatingToast isVisible={isOffline} position="BottomRight" showCloseButton={false} toast={OFFLINE_TOAST} />
-      <FloatingToast isVisible={toast !== null} position="TopRight" toast={toast} onClose={closeToast} />
+      <FloatingToast
+        isVisible={isOffline}
+        position="BottomRight"
+        showCloseButton={false}
+        toast={OFFLINE_TOAST}
+      />
+      <FloatingToast
+        isVisible={toast !== null}
+        position="TopRight"
+        toast={toast}
+        onClose={closeToast}
+      />
     </div>
   );
 }
@@ -2955,6 +3121,7 @@ export default function App() {
 
 Run: `npm run build` && `npm test` — Expected: both green.
 Run: `npm run dev` and check:
+
 1. Settings dialog visible top-left on load; model dropdown populated from web-llm's prebuilt list; close button hides it.
 2. `/llm` in the chat input reopens the dialog; `/help` shows a toast top-right listing all five commands/emotes; `/about` opens the GitHub repo in a new tab.
 3. Sending "hello" without a model shows "Make sure to select and download a model first." in the orange fish's bubble (after the thinking dots).
@@ -2974,9 +3141,11 @@ git commit -m "Add chat input, LLM settings dialog, and complete app wiring"
 ### Task 14: PWA support
 
 **Files:**
+
 - Modify: `vite.config.ts`, `src/main.tsx`, `src/vite-env.d.ts`
 
 **Interfaces:**
+
 - Produces: installable PWA; app shell + assets precached by a generated service worker; model weights untouched (web-llm manages its own Cache Storage).
 
 - [ ] **Step 1: Configure vite-plugin-pwa** — replace `vite.config.ts`:
@@ -3051,10 +3220,12 @@ git commit -m "Add PWA manifest and service worker via vite-plugin-pwa"
 ### Task 15: Retire dotnet — cleanup, README, dig.toml, VS Code config
 
 **Files:**
+
 - Delete: `ChatFish/`, `ChatFish.Tests/`, `ChatFish.sln`, `publish/`
 - Modify: `README.md`, `dig.toml`, `.vscode/tasks.json`, `.vscode/launch.json`, `.vscode/settings.json`, `.gitignore`
 
 **Interfaces:**
+
 - Consumes: the fully working app from Tasks 1–14.
 
 - [ ] **Step 1: Confirm nothing still references the old tree**
@@ -3088,7 +3259,7 @@ Leave `store-id` and `remote` untouched.
 
 - [ ] **Step 4: Rewrite `README.md`**
 
-```markdown
+````markdown
 # ChatFish
 
 ChatFish is a whimsical React SPA: a tank of animated fish where you chat with an AI fish that runs **entirely in your browser**. There is no server-side inference and no chat data ever leaves your machine — the language model is downloaded and executed locally via [web-llm](https://github.com/mlc-ai/web-llm).
@@ -3112,6 +3283,7 @@ ChatFish is a whimsical React SPA: a tank of animated fish where you chat with a
 npm install
 npm run dev
 ```
+````
 
 Then open the URL printed in the console. Open the LLM settings (the `/llm` command or the settings dialog), pick a model, and click **Download**. Once the model finishes loading, chat with the orange AI fish.
 
@@ -3124,7 +3296,8 @@ Then open the URL printed in the console. Open the LLM settings (the `/llm` comm
 ## License
 
 See [LICENSE.txt](LICENSE.txt).
-```
+
+````
 
 - [ ] **Step 5: Replace `.vscode/tasks.json`**
 
@@ -3155,7 +3328,7 @@ See [LICENSE.txt](LICENSE.txt).
     }
   ]
 }
-```
+````
 
 Also open `.vscode/launch.json` and `.vscode/settings.json`; delete dotnet/Blazor-specific entries (e.g. a `blazorwasm` or `coreclr` launch config). If a file becomes empty apart from `{}`, delete it.
 
