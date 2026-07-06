@@ -364,3 +364,14 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Vite / node
+node_modules/
+dist/
+.superpowers/
+
+# TypeScript incremental build state
+*.tsbuildinfo
+
+# Playwright MCP scratch
+.playwright-mcp/

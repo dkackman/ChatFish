@@ -1,0 +1,244 @@
+.message-bubble {
+  background: radial-gradient(
+    circle at top left,
+    rgba(255, 255, 255, 0.7),
+    rgba(255, 255, 255, 0.3)
+  );
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  padding: 30px;
+  /* Absolute positioning (below) makes the bubble shrink-to-fit; without an
+       intrinsic width it collapses to min-width and breaks one word per line.
+       max-content sizes it to the text, clamped by max-width so it still wraps. */
+  width: max-content;
+  max-width: 250px;
+  min-width: 100px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  transition:
+    opacity 0.5s ease-in-out,
+    transform 0.5s ease-in-out;
+  box-shadow:
+    inset -5px -5px 15px rgba(255, 255, 255, 0.5),
+    inset 5px 5px 15px rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(2px);
+  text-align: center;
+  position: absolute;
+  left: 50%;
+}
+
+.message-bubble::after {
+  content: "";
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.5), transparent);
+  transform: rotate(45deg);
+  border-radius: 50%;
+}
+
+/* Adjust the bubble position based on the fish direction.
+   The bubble is absolutely positioned at the fish centre (left: 50%); the
+   -50% re-centres it and the +/-43% pushes it ahead of the fish. */
+.message-bubble.left {
+  transform: translateX(-93%);
+
+  /* Move bubble ahead of left-facing fish */
+}
+
+.message-bubble.right {
+  transform: translateX(-7%);
+
+  /* Move bubble ahead of right-facing fish */
+}
+
+/* Vertical anchoring: above the fish when there is room, below otherwise.
+   The vertical side is chosen in FishAnimation.ComputeBubbleSide. */
+.message-bubble.above {
+  bottom: 100%;
+}
+
+.message-bubble.below {
+  top: 100%;
+}
+
+/* Trailing bubbles for left-facing fish */
+.message-bubble.left::before,
+.message-bubble.left::after {
+  animation: floatLeft 3s infinite ease-in-out;
+  content: "";
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+}
+
+.message-bubble.left::before {
+  width: 15px;
+  height: 15px;
+  left: 50%;
+  top: 105%;
+  transform: translateX(-50%);
+}
+
+.message-bubble.left::after {
+  width: 10px;
+  height: 10px;
+  left: 60%;
+  top: 110%;
+  transform: translateX(-50%);
+}
+
+/* Trailing bubbles for right-facing fish */
+.message-bubble.right::before,
+.message-bubble.right::after {
+  animation: floatRight 3s infinite ease-in-out;
+  content: "";
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+}
+
+.message-bubble.right::before {
+  width: 15px;
+  height: 15px;
+  left: 50%;
+  top: 105%;
+  transform: translateX(-50%);
+}
+
+.message-bubble.right::after {
+  width: 10px;
+  height: 10px;
+  left: 40%;
+  top: 110%;
+  transform: translateX(-50%);
+}
+
+/* When the bubble sits below the fish, the trailing bubbles rise from the top
+   of the bubble back toward the fish's head instead of trailing off the bottom. */
+.message-bubble.below.left::before,
+.message-bubble.below.right::before {
+  top: auto;
+  bottom: 105%;
+}
+
+.message-bubble.below.left::after,
+.message-bubble.below.right::after {
+  top: auto;
+  bottom: 110%;
+}
+
+@keyframes floatLeft {
+  0%,
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: translateX(-60%) translateY(-10%) scale(0.8);
+  }
+}
+
+@keyframes floatRight {
+  0%,
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: translateX(-40%) translateY(-10%) scale(0.8);
+  }
+}
+
+.message-bubble.hidden {
+  opacity: 0;
+}
+
+.message-bubble.visible {
+  opacity: 1;
+}
+
+.message-bubble.shout {
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: larger;
+  color: #ff0000;
+}
+
+.message-bubble.whisper {
+  font-weight: italic;
+  text-transform: lowercase;
+  font-size: smaller;
+  color: #60666e;
+}
+
+/* Animated "…" shown while the model is thinking (before its first token). */
+.thinking-dots {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+.thinking-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #60666e;
+  opacity: 0.3;
+  animation: thinkingBounce 1.4s infinite ease-in-out both;
+}
+
+.thinking-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.thinking-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes thinkingBounce {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+
+  40% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* Live peek at a reasoning model's chain-of-thought, shown under the dots.
+   Faint, italic, and clamped to a few lines with a fade at the top so the text
+   reads as a thought scrolling up and out of view rather than a wall of text. */
+.thinking-reasoning {
+  margin-top: 10px;
+  max-width: 190px;
+  font-size: 0.68em;
+  font-style: italic;
+  line-height: 1.3;
+  color: #4a5560;
+  opacity: 0.75;
+  text-align: left;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 45%);
+  mask-image: linear-gradient(to bottom, transparent, black 45%);
+}
+
+/* ... Add more modifier styles as needed ... */

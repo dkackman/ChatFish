@@ -20,11 +20,13 @@
 ### Task 1: Bubble placement math in `FishAnimation` (C#, TDD)
 
 **Files:**
+
 - Create: `ChatFish/Components/BubbleVerticalSide.cs`
 - Modify: `ChatFish/Components/FishAnimation.cs`
 - Test: `ChatFish.Tests/FishAnimationTests.cs`
 
 **Interfaces:**
+
 - Consumes: `Point`, `Size`, `Velocity`, `Direction`, `ClientRect` (existing structs/enums).
 - Produces (used by Task 2):
   - `enum BubbleVerticalSide { Above, Below }`
@@ -359,12 +361,14 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 ### Task 2: Decouple the bubble in the view (Razor, CSS, JS)
 
 **Files:**
+
 - Modify: `ChatFish/wwwroot/scripts/fish-tank.js`
 - Modify: `ChatFish/Components/MessageBubble.razor`
 - Modify: `ChatFish/Components/MessageBubble.razor.css`
 - Modify: `ChatFish/Components/Fish.razor`
 
 **Interfaces:**
+
 - Consumes (from Task 1): `FishAnimation.SetBubble(Size)`, `ClearBubble()`, `BubbleSide`, `HasMessage`; `BubbleVerticalSide`.
 - Produces: `window.getBubbleRect(fishElement)` → the bubble's `getBoundingClientRect()`; `MessageBubble` renders an `above`/`below` class from a `VerticalSide` parameter.
 
@@ -413,9 +417,9 @@ In `ChatFish/Components/MessageBubble.razor.css`:
 Add `position: absolute;` and `left: 50%;` to the base `.message-bubble` rule (insert after the `text-align: center;` line, before the closing brace at line 17):
 
 ```css
-    text-align: center;
-    position: absolute;
-    left: 50%;
+text-align: center;
+position: absolute;
+left: 50%;
 ```
 
 Replace the two facing-direction rules (lines 31-42) — which currently read `translateX(-43%)` / `translateX(43%)` — with values that also re-centre the now-absolute bubble (`-50%`) and add the vertical-anchor rules:
@@ -425,25 +429,25 @@ Replace the two facing-direction rules (lines 31-42) — which currently read `t
    The bubble is absolutely positioned at the fish centre (left: 50%); the
    -50% re-centres it and the +/-43% pushes it ahead of the fish. */
 .message-bubble.left {
-    transform: translateX(-93%);
+  transform: translateX(-93%);
 
-    /* Move bubble ahead of left-facing fish */
+  /* Move bubble ahead of left-facing fish */
 }
 
 .message-bubble.right {
-    transform: translateX(-7%);
+  transform: translateX(-7%);
 
-    /* Move bubble ahead of right-facing fish */
+  /* Move bubble ahead of right-facing fish */
 }
 
 /* Vertical anchoring: above the fish when there is room, below otherwise.
    The vertical side is chosen in FishAnimation.ComputeBubbleRect. */
 .message-bubble.above {
-    bottom: 100%;
+  bottom: 100%;
 }
 
 .message-bubble.below {
-    top: 100%;
+  top: 100%;
 }
 ```
 
@@ -505,6 +509,7 @@ Expected: Build succeeded, 0 errors.
 - [ ] **Step 6: Verify in the app**
 
 Run the app (`dotnet run --project ChatFish/ChatFish.csproj`) and, using the `/run` skill or the browser:
+
 - Send a **long** message to a fish near the **top** edge → the bubble renders **below** the fish and the fish stays fully visible (previously it was pushed off the bottom).
 - Send a message to a fish near the **middle** → the bubble renders **above** the fish, ahead of its swimming direction.
 - Watch a talking fish approach a **side** wall → it turns around before the bubble clips the edge.

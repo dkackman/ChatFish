@@ -1,6 +1,6 @@
 # ChatFish
 
-ChatFish is a whimsical [Blazor WebAssembly](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) app: a tank of animated fish where you chat with an AI fish that runs **entirely in your browser**. There is no server-side inference and no chat data ever leaves your machine — the language model is downloaded and executed locally via [web-llm](https://github.com/mlc-ai/web-llm).
+ChatFish is a whimsical React SPA: a tank of animated fish where you chat with an AI fish that runs **entirely in your browser**. There is no server-side inference and no chat data ever leaves your machine — the language model is downloaded and executed locally via [web-llm](https://github.com/mlc-ai/web-llm).
 
 ## Features
 
@@ -13,21 +13,39 @@ ChatFish is a whimsical [Blazor WebAssembly](https://dotnet.microsoft.com/en-us/
 
 - A browser with [**WebGPU**](https://caniuse.com/webgpu) support (recent Chrome, Edge, or Firefox). web-llm cannot run without it.
 - Enough disk/GPU memory to download and host the selected model. Models are fetched in the browser on first use and cached, so the initial download can be large (hundreds of MB to several GB depending on the model).
-- [.NET 10 SDK](https://dotnet.microsoft.com/download) to build and run.
+- [Node.js](https://nodejs.org/) 24+ to build and run.
 
 ## Running locally
 
 ```sh
-dotnet run --project ChatFish
+npm install
+npm run dev
 ```
 
 Then open the URL printed in the console. Open the LLM settings (the `/llm` command or the settings dialog), pick a model, and click **Download**. Once the model finishes loading, chat with the orange AI fish.
 
 ## How it works
 
-- The Blazor app hosts the fish-tank UI and animation.
-- [`LLMService`](ChatFish/Services/LLMService.cs) bridges Blazor and JavaScript via `IJSRuntime`.
-- [`chatfish-llm.js`](ChatFish/wwwroot/scripts/chatfish-llm.js) drives web-llm, which runs the model in a dedicated Web Worker ([`worker.js`](ChatFish/wwwroot/scripts/worker.js)) to keep the UI responsive.
+- React renders the fish-tank UI; a fixed-step animation loop drives the fish physics ([`src/engine/`](src/engine/)) and writes positions directly to the DOM.
+- [`src/llm/`](src/llm/) drives web-llm, which runs the model in a dedicated Web Worker to keep the UI responsive.
+- `npm test` runs the unit tests; `npm run build` outputs a static site to `dist/`.
+
+## digstore notes
+
+[dig.toml](dig.toml) configures the on-chain store for publishing. The `store-id` is a Chia DID, and the `output-dir` is `dist/`. The `build-command` is run before each `digstore deploy`.
+
+```bash
+# needed to switch form teh previous blazor version
+digstore unstage            # drop the stale discovery manifest
+digstore dir dist           # repoint the store's content root to dist/
+
+# regular publish workflow
+digstore add -A             # now stages your actual build output
+digstore add --discovery    # regenerate the manifest over the real file set
+digstore staged             # sanity-check the list before spending
+digstore commit -m "React rewrite"
+digstore push
+```
 
 ## License
 
