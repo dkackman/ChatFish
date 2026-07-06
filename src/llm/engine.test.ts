@@ -1,10 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { CompletionChunk } from "./generation";
+import type { CompletionChunk, LlmMessage } from "./generation";
+
+interface ChatCompletionRequest {
+  messages: LlmMessage[];
+  top_p: number;
+  repetition_penalty: number;
+  max_tokens: number;
+  stream: true;
+}
 
 const fakeEngine = {
   chat: {
     completions: {
-      create: vi.fn(async () =>
+      create: vi.fn(async (_request: ChatCompletionRequest) =>
         (async function* (): AsyncGenerator<CompletionChunk> {
           yield { choices: [{ delta: { content: "<think>hmm</think>fish reply" } }] };
         })(),
@@ -83,7 +91,7 @@ describe("engine", () => {
 
     // onFinish gets the raw final (including <think>), transcript keeps the answer only
     expect(finals).toEqual(["<think>hmm</think>fish reply"]);
-    const sent = (fakeEngine.chat.completions.create as any).mock.calls[0][0].messages;
+    const sent = fakeEngine.chat.completions.create.mock.calls[0][0].messages;
     expect(sent[0]).toEqual({
       role: "system",
       content: "You are ChatFish, a friendly fish that loves to chat with people. You are the color orange",
@@ -96,7 +104,7 @@ describe("engine", () => {
       onFinish: noProgress,
       onError: noError,
     });
-    const second = (fakeEngine.chat.completions.create as any).mock.calls[1][0].messages;
+    const second = fakeEngine.chat.completions.create.mock.calls[1][0].messages;
     expect(second[2]).toEqual({ role: "assistant", content: "fish reply" });
   });
 
@@ -112,7 +120,7 @@ describe("engine", () => {
     // Only the system prompt and the new turn were sent — no leftover history
     // from the conversation before the reset. (`sent` is the live transcript
     // array, so by now it also holds this turn's own persisted answer.)
-    const sent = (fakeEngine.chat.completions.create as any).mock.calls[1][0].messages;
+    const sent = fakeEngine.chat.completions.create.mock.calls[1][0].messages;
     expect(sent).toEqual([
       {
         role: "system",
