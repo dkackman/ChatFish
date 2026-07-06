@@ -51,10 +51,13 @@ export class FishAnimation {
     this.bubbleSize = { width: 0, height: 0 };
   }
 
+  // Spawns within the middle half of each axis so a new fish appears away
+  // from the tank walls rather than potentially right at an edge.
   initializePosition(tank: TankRect): void {
-    // the 50 is buffer to keep the fish from being placed too close to the edge
-    const left = (tank.width - 50.0) * Math.random();
-    const top = (tank.height - 50.0) * Math.random();
+    const marginX = tank.width * 0.25;
+    const marginY = tank.height * 0.25;
+    const left = marginX + (tank.width - marginX * 2) * Math.random();
+    const top = marginY + (tank.height - marginY * 2) * Math.random();
     this.position = { left, top };
     this.velocity = randomVelocity(Math.random() < 0.5 ? "left" : "right");
   }
