@@ -30,6 +30,23 @@ Then open the URL printed in the console. Open the LLM settings (the `/llm` comm
 - [`src/llm/`](src/llm/) drives web-llm, which runs the model in a dedicated Web Worker to keep the UI responsive.
 - `npm test` runs the unit tests; `npm run build` outputs a static site to `dist/`.
 
+## digstore notes
+
+[dig.toml](dig.toml) configures the on-chain store for publishing. The `store-id` is a Chia DID, and the `output-dir` is `dist/`. The `build-command` is run before each `digstore deploy`.
+
+```bash
+# needed to switch form teh previous blazor version
+digstore unstage            # drop the stale discovery manifest
+digstore dir dist           # repoint the store's content root to dist/
+
+# regular publish workflow
+digstore add -A             # now stages your actual build output
+digstore add --discovery    # regenerate the manifest over the real file set
+digstore staged             # sanity-check the list before spending
+digstore commit -m "React rewrite"
+digstore push
+```
+
 ## License
 
 See [LICENSE.txt](LICENSE.txt).
