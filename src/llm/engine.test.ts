@@ -22,6 +22,7 @@ vi.mock("@mlc-ai/web-llm", () => ({
 
 beforeEach(() => {
   vi.resetModules();
+  fakeEngine.chat.completions.create.mockClear();
   // jsdom has no Worker; engine.ts constructs one to hand to web-llm (mocked above).
   vi.stubGlobal("Worker", class { constructor() {} });
 });
