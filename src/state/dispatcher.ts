@@ -42,8 +42,14 @@ function processCommand(command: string): void {
 }
 
 async function sendToFish(message: ChatMessage): Promise<void> {
-  const { setFishMessage } = useFishStore.getState();
+  const { setFishMessage, isGenerating, setGenerating } = useFishStore.getState();
+  // A reply is already streaming: ignore this send rather than racing a second
+  // generate() call against the first on the shared engine/transcript.
+  if (isGenerating) {
+    return;
+  }
 
+  setGenerating(true);
   setFishMessage(USER_FISH_ID, message);
   // Show the animated "thinking" bubble immediately; it stays until the
   // first streamed token replaces it (or an error clears it).
@@ -77,5 +83,7 @@ async function sendToFish(message: ChatMessage): Promise<void> {
     });
   } catch {
     setFishMessage(AI_FISH_ID, fromReply(NO_MODEL_MESSAGE));
+  } finally {
+    setGenerating(false);
   }
 }

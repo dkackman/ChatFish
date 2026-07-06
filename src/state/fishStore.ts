@@ -26,12 +26,16 @@ interface FishTankState {
   toast: Toast | null;
   isSettingsVisible: boolean;
   isOffline: boolean;
+  // True while a message is in flight to the LLM, so the UI can block a
+  // second send from racing the first on the shared engine/transcript.
+  isGenerating: boolean;
   setFishMessage(id: string, message: ChatMessage): void;
   showToast(toast: Toast): void;
   closeToast(): void;
   openSettings(): void;
   closeSettings(): void;
   setOffline(offline: boolean): void;
+  setGenerating(generating: boolean): void;
 }
 
 // Bubble auto-hide timers, one per fish; not reactive state.
@@ -46,6 +50,7 @@ export const useFishStore = create<FishTankState>((set, get) => ({
   // The settings dialog is visible on startup, matching the Blazor app.
   isSettingsVisible: true,
   isOffline: false,
+  isGenerating: false,
 
   setFishMessage(id, message) {
     const current = get().fish[id];
@@ -82,5 +87,8 @@ export const useFishStore = create<FishTankState>((set, get) => ({
   },
   setOffline(offline) {
     set({ isOffline: offline });
+  },
+  setGenerating(generating) {
+    set({ isGenerating: generating });
   },
 }));

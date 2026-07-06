@@ -99,4 +99,27 @@ describe("engine", () => {
     const second = (fakeEngine.chat.completions.create as any).mock.calls[1][0].messages;
     expect(second[2]).toEqual({ role: "assistant", content: "fish reply" });
   });
+
+  it("resetEngine clears prior conversation history", async () => {
+    const engine = await load();
+    await engine.initializeEngine("model-a", noProgress, noError);
+    await engine.sendChatMessage("hello fish", { onUpdate: noProgress, onFinish: noProgress, onError: noError });
+
+    engine.resetEngine();
+    await engine.initializeEngine("model-a", noProgress, noError);
+    await engine.sendChatMessage("fresh start", { onUpdate: noProgress, onFinish: noProgress, onError: noError });
+
+    // Only the system prompt and the new turn were sent — no leftover history
+    // from the conversation before the reset. (`sent` is the live transcript
+    // array, so by now it also holds this turn's own persisted answer.)
+    const sent = (fakeEngine.chat.completions.create as any).mock.calls[1][0].messages;
+    expect(sent).toEqual([
+      {
+        role: "system",
+        content: "You are ChatFish, a friendly fish that loves to chat with people. You are the color orange",
+      },
+      { role: "user", content: "fresh start" },
+      { role: "assistant", content: "fish reply" },
+    ]);
+  });
 });

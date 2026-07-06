@@ -19,9 +19,9 @@ export function FishTank() {
 
   const fishList = Object.values(fish);
   return (
-    <div id="fishTank" ref={tankRef} aria-label="Fish tank with swimming fish and an octopus">
+    <div id="fishTank" ref={tankRef} aria-label="Fish tank with swimming fish">
       <div aria-live="polite" className="visually-hidden">
-        There are currently {fishList.length} fish in the tank, and one octopus.
+        There are currently {fishList.length} fish in the tank.
       </div>
       {fishList.map((f) => (
         <Fish key={f.id} fish={f} isClientFish={f.id === USER_FISH_ID} ticker={ticker} />

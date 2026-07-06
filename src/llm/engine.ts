@@ -28,6 +28,9 @@ export async function getDownloadedModels(): Promise<string[]> {
 export function resetEngine(): void {
   engine = undefined;
   loadedModel = null;
+  // Loading a (re)new engine starts a fresh conversation: keep only the system
+  // prompt so a switched-to model isn't conditioned on the old model's turns.
+  transcript.length = 1;
 }
 
 // Returns the id of the model now loaded in the engine, or null if loading failed.

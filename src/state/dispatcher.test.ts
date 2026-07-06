@@ -127,4 +127,26 @@ describe("dispatchMessage", () => {
 
     expect(useFishStore.getState().fish[AI_FISH_ID].message.message).toBe(NO_MODEL_MESSAGE);
   });
+
+  it("ignores a second send while a reply is still streaming", async () => {
+    const { dispatchMessage, useFishStore, llm } = await load();
+    let resolveSend!: () => void;
+    vi.mocked(llm.sendChatMessage).mockImplementation(
+      () => new Promise<void>((resolve) => (resolveSend = resolve)),
+    );
+
+    const first = dispatchMessage("first message");
+    // sendToFish runs synchronously up to the awaited sendChatMessage call, so
+    // isGenerating is already true here without needing to await anything.
+    expect(useFishStore.getState().isGenerating).toBe(true);
+
+    await dispatchMessage("second message");
+
+    expect(llm.sendChatMessage).toHaveBeenCalledTimes(1);
+    expect(llm.sendChatMessage).toHaveBeenCalledWith("first message", expect.any(Object));
+
+    resolveSend();
+    await first;
+    expect(useFishStore.getState().isGenerating).toBe(false);
+  });
 });
