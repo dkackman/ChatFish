@@ -1,0 +1,22 @@
+# dig.toml — linked to an existing DIG store. Committed to your repo; NO secrets.
+#
+# `digstore dev`    — preview locally for free (no chain, no spend).
+# `digstore deploy` — publish a new version (costs the capsule price in $DIG + an XCH fee).
+
+# The on-chain store this folder publishes to.
+store-id = "4e904b3fb2b9efef7d5954f64f1f27812cd90ebdbf3ecf99c9f4eb8f7fd07b30"
+
+# The folder `deploy` publishes (your build output).
+output-dir = "publish/wwwroot"
+
+# Where to publish. The public DIGHUb by default for this store.
+remote = "dig://4e904b3fb2b9efef7d5954f64f1f27812cd90ebdbf3ecf99c9f4eb8f7fd07b30"
+
+# Uncomment to run a build before each deploy.
+# build-command = "npm ci && npm run build"
+#
+# NOTE: tested `build-command = "dotnet publish ChatFish/ChatFish.csproj -c Release -o publish"`
+# against digstore 0.7.0 and it fails ("Project file does not exist") because the command
+# runs from a working directory that doesn't line up with this relative .csproj path — even
+# though the identical command succeeds when run directly. Run `dotnet publish` yourself
+# before `digstore dev`/`deploy` instead.
