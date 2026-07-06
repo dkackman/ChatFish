@@ -369,3 +369,9 @@ FodyWeavers.xsd
 node_modules/
 dist/
 .superpowers/
+
+# TypeScript incremental build state
+*.tsbuildinfo
+
+# Playwright MCP scratch
+.playwright-mcp/
