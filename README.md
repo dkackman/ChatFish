@@ -13,7 +13,7 @@ ChatFish is a whimsical React SPA: a tank of animated fish where you chat with a
 
 - A browser with [**WebGPU**](https://caniuse.com/webgpu) support (recent Chrome, Edge, or Firefox). web-llm cannot run without it.
 - Enough disk/GPU memory to download and host the selected model. Models are fetched in the browser on first use and cached, so the initial download can be large (hundreds of MB to several GB depending on the model).
-- [Node.js](https://nodejs.org/) 20+ to build and run.
+- [Node.js](https://nodejs.org/) 24+ to build and run.
 
 ## Running locally
 

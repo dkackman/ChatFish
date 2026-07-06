@@ -15,13 +15,7 @@ export default tseslint.config(
   },
   prettier,
   {
-    ignores: [
-      "**/dist/**",
-      "**/node_modules/**",
-      "**/.vite/**",
-      ".remember/**",
-      "web/public/umami.js",
-    ],
+    ignores: ["**/dist/**", "**/node_modules/**", "**/.vite/**", ".remember/**"],
   },
   {
     rules: {
