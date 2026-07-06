@@ -83,7 +83,7 @@ describe("engine", () => {
 
     // onFinish gets the raw final (including <think>), transcript keeps the answer only
     expect(finals).toEqual(["<think>hmm</think>fish reply"]);
-    const sent = fakeEngine.chat.completions.create.mock.calls[0][0].messages;
+    const sent = (fakeEngine.chat.completions.create as any).mock.calls[0][0].messages;
     expect(sent[0]).toEqual({
       role: "system",
       content: "You are ChatFish, a friendly fish that loves to chat with people. You are the color orange",
@@ -96,7 +96,7 @@ describe("engine", () => {
       onFinish: noProgress,
       onError: noError,
     });
-    const second = fakeEngine.chat.completions.create.mock.calls[1][0].messages;
+    const second = (fakeEngine.chat.completions.create as any).mock.calls[1][0].messages;
     expect(second[2]).toEqual({ role: "assistant", content: "fish reply" });
   });
 });
