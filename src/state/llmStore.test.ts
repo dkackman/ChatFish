@@ -48,6 +48,7 @@ describe("llmStore", () => {
 
     useLlmStore.getState().selectModel("model-b");
 
+    expect(useLlmStore.getState().selectedModel).toBe("model-b");
     expect(localStorage.getItem("selectedModel")).toBe("model-b");
   });
 
@@ -61,6 +62,7 @@ describe("llmStore", () => {
 
     expect(llm.resetEngine).toHaveBeenCalled();
     expect(llm.initializeEngine).toHaveBeenCalledWith("model-b", expect.any(Function), expect.any(Function));
+    expect(useLlmStore.getState().downloadedModels).toEqual(["model-a"]);
     expect(useLlmStore.getState().loadedModel).toBe("model-b");
     expect(useLlmStore.getState().isProgressVisible).toBe(true);
   });
