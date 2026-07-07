@@ -4,11 +4,18 @@ import {
   direction as velocityDirection,
   type BubbleVerticalSide,
   type Direction,
+  type Point,
 } from "../engine/geometry";
 import type { TankTicker } from "../engine/ticker";
 import type { FishData } from "../state/fishStore";
 import { MessageBubble } from "./MessageBubble";
 import "../styles/fish.css";
+
+// Position is written as a transform rather than left/top so per-tick updates
+// are compositor-only (no layout). See the .fish-container comment in fish.css.
+function setPosition(el: HTMLElement, point: Point): void {
+  el.style.transform = `translate3d(${point.left}px, ${point.top}px, 0)`;
+}
 
 // There are different animated PNGs used based on the fish's speed, because
 // the PNG animation speed cannot be set dynamically. (Same thresholds as the
@@ -52,8 +59,7 @@ export function Fish({ fish, isClientFish, ticker }: FishProps) {
       setDir(velocityDirection(animation.velocity));
       const el = containerRef.current;
       if (el) {
-        el.style.left = `${animation.position.left}px`;
-        el.style.top = `${animation.position.top}px`;
+        setPosition(el, animation.position);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -75,8 +81,7 @@ export function Fish({ fish, isClientFish, ticker }: FishProps) {
       }
       animation.incrementPosition(tankRect);
       if (el) {
-        el.style.left = `${animation.position.left}px`;
-        el.style.top = `${animation.position.top}px`;
+        setPosition(el, animation.position);
       }
       setDir(velocityDirection(animation.velocity));
       setFrame(frameDuration(animation.velocity.dx));
@@ -107,6 +112,7 @@ export function Fish({ fish, isClientFish, ticker }: FishProps) {
     animation.enabled = false;
     let lastX = e.clientX;
     let lastY = e.clientY;
+    let { left, top } = animation.position;
     const el = containerRef.current;
     if (!el) {
       return;
@@ -114,10 +120,11 @@ export function Fish({ fish, isClientFish, ticker }: FishProps) {
 
     const onMove = (ev: MouseEvent) => {
       ev.preventDefault();
-      el.style.left = `${el.offsetLeft + (ev.clientX - lastX)}px`;
-      el.style.top = `${el.offsetTop + (ev.clientY - lastY)}px`;
+      left += ev.clientX - lastX;
+      top += ev.clientY - lastY;
       lastX = ev.clientX;
       lastY = ev.clientY;
+      setPosition(el, { left, top });
     };
     const cleanup = () => {
       document.removeEventListener("mousemove", onMove);
@@ -126,7 +133,7 @@ export function Fish({ fish, isClientFish, ticker }: FishProps) {
     };
     const onUp = () => {
       cleanup();
-      animation.moveFish({ left: el.offsetLeft, top: el.offsetTop });
+      animation.moveFish({ left, top });
       animation.enabled = true;
     };
     document.addEventListener("mousemove", onMove);
@@ -145,20 +152,22 @@ export function Fish({ fish, isClientFish, ticker }: FishProps) {
   const spriteDirection = dir === "right" ? "Right" : "Left";
   return (
     <div ref={containerRef} className="fish-container" onMouseDown={onMouseDown}>
-      <MessageBubble
-        message={fish.message}
-        isVisible={fish.isMessageVisible}
-        fishDirection={dir}
-        verticalSide={bubbleSide}
-      />
-      <div className={`fish-wrapper ${dir} ${fish.isMessageVisible ? "message-visible" : ""}`}>
-        <img
-          className="fish-img"
-          src={`/fish/${fish.color}/${spriteDirection}-${frame}.png`}
-          alt={`${fish.color} fish`}
-          aria-label={`${fish.color} fish ${isClientFish ? "- your fish" : ""}`}
-          style={{ transform: `scale(${fish.scale})` }}
+      <div className="fish-float">
+        <MessageBubble
+          message={fish.message}
+          isVisible={fish.isMessageVisible}
+          fishDirection={dir}
+          verticalSide={bubbleSide}
         />
+        <div className={`fish-wrapper ${dir} ${fish.isMessageVisible ? "message-visible" : ""}`}>
+          <img
+            className="fish-img"
+            src={`/fish/${fish.color}/${spriteDirection}-${frame}.png`}
+            alt={`${fish.color} fish`}
+            aria-label={`${fish.color} fish ${isClientFish ? "- your fish" : ""}`}
+            style={{ transform: `scale(${fish.scale})` }}
+          />
+        </div>
       </div>
     </div>
   );

@@ -1,9 +1,20 @@
 .fish-container {
+  /* Position is driven entirely by a JS-written `transform: translate3d(...)`
+     (see Fish.tsx), so the simulation's per-tick writes stay compositor-only
+     instead of triggering layout. top/left are fixed at the tank origin;
+     translate3d displaces from there. */
   position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.fish-float {
   display: flex;
   align-items: center;
   flex-direction: column;
-  /* `float` keyframes are defined globally in css/floating-component.css */
+  /* Decorative bob, kept on its own element so it doesn't fight the
+     container's position transform. `float` keyframes are defined globally
+     in css/floating-component.css. */
   animation: float 4s infinite ease-in-out;
 }
 
