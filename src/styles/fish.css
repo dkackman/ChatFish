@@ -6,6 +6,9 @@
   position: absolute;
   top: 0;
   left: 0;
+  /* Dragging is driven by Pointer Events; without this, touch browsers treat
+     a drag as a page scroll/pan gesture instead of delivering pointermove. */
+  touch-action: none;
 }
 
 .fish-float {

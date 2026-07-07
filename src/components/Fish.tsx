@@ -105,21 +105,25 @@ export function Fish({ fish, isClientFish, ticker }: FishProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fish.message, fish.isMessageVisible]);
 
-  // Drag: pause the simulation, follow the mouse, then resume swimming from
-  // the drop point in the opposite direction (port of makeDraggable).
-  function onMouseDown(e: React.MouseEvent) {
+  // Drag: pause the simulation, follow the pointer, then resume swimming from
+  // the drop point in the opposite direction (port of makeDraggable). Pointer
+  // Events (rather than mouse events) cover touch/pen for free, and capturing
+  // the pointer on the element means move/up keep arriving even if the
+  // pointer leaves the fish or the window, so no document-level listeners
+  // are needed.
+  function onPointerDown(e: React.PointerEvent) {
     e.preventDefault();
-    animation.enabled = false;
-    let lastX = e.clientX;
-    let lastY = e.clientY;
-    let { left, top } = animation.position;
     const el = containerRef.current;
     if (!el) {
       return;
     }
+    animation.enabled = false;
+    el.setPointerCapture(e.pointerId);
+    let lastX = e.clientX;
+    let lastY = e.clientY;
+    let { left, top } = animation.position;
 
-    const onMove = (ev: MouseEvent) => {
-      ev.preventDefault();
+    const onMove = (ev: PointerEvent) => {
       left += ev.clientX - lastX;
       top += ev.clientY - lastY;
       lastX = ev.clientX;
@@ -127,8 +131,9 @@ export function Fish({ fish, isClientFish, ticker }: FishProps) {
       setPosition(el, { left, top });
     };
     const cleanup = () => {
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerup", onUp);
+      el.removeEventListener("pointercancel", onUp);
       dragCleanupRef.current = null;
     };
     const onUp = () => {
@@ -136,8 +141,9 @@ export function Fish({ fish, isClientFish, ticker }: FishProps) {
       animation.moveFish({ left, top });
       animation.enabled = true;
     };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerup", onUp);
+    el.addEventListener("pointercancel", onUp);
     dragCleanupRef.current = cleanup;
   }
 
@@ -151,7 +157,7 @@ export function Fish({ fish, isClientFish, ticker }: FishProps) {
 
   const spriteDirection = dir === "right" ? "Right" : "Left";
   return (
-    <div ref={containerRef} className="fish-container" onMouseDown={onMouseDown}>
+    <div ref={containerRef} className="fish-container" onPointerDown={onPointerDown}>
       <div className="fish-float">
         <MessageBubble
           message={fish.message}
